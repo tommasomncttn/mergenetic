@@ -562,6 +562,14 @@ def create_interface():
                                     )
                                     task_inputs.append(task)
                                 task_groups.append(task_group)
+                            
+                            # Add Additional Tasks Folder field after the task dropdowns
+                            gr.Markdown('<h3 style="margin: 0.5rem 0.5rem 0.5rem 0.5rem;">Additional Settings</h3>')
+                            additional_templates_folder_multi = gr.Textbox(
+                                label="Additional Tasks Folder",
+                                value="lm_tasks",
+                                info="Folder containing additional lm-eval tasks"
+                            )
                     
                     # Single language configuration
                     with gr.Group() as single_group:
@@ -723,7 +731,7 @@ def create_interface():
                                 "search": search_tasks,
                                 "test": test_tasks
                             }
-                            config["additional_templates_folder"] = additional_templates_folder_single_val
+                            config["additional_templates_folder"] = additional_templates_folder_multi.value
                         else:
                             # For single-task mode - use empty string as language ID
                             config["langs"] = [""]
@@ -963,7 +971,8 @@ def create_interface():
                     "search": search_tasks,
                     "test": test_tasks
                 }
-                config["additional_templates_folder"] = additional_templates_folder_single_val
+                # Use the multi-task additional templates folder
+                config["additional_templates_folder"] = additional_templates_folder_multi.value
             else:
                 # Single language configuration - use empty string for language ID
                 config["langs"] = [""]
@@ -1014,7 +1023,8 @@ def create_interface():
             path_to_store_config, path_to_store_merged_model, n_langs,
             lang_single, model_path_single, task_name_single,
             metric_single, additional_templates_folder_single,
-            bench, mode, metric
+            bench, mode, metric,
+            additional_templates_folder_multi
         ] + lang_inputs + model_inputs + task_inputs:
             component.change(
                 fn=update_preview,
