@@ -4,12 +4,11 @@ device: cuda:2
 dtype: float16
 eval_batch_size: 16
 langs:
-- ''
+  - task0
 metric: acc
 mode: random
 models:
-  ? ''
-  : OpenLLM-Ro/RoMistral-7b-Instruct
+  task0: OpenLLM-Ro/RoMistral-7b-Instruct
 n_iter: 10
 n_samples: 10
 path_to_store_config: configs
@@ -20,8 +19,6 @@ seed: 42
 task_type: lm_eval
 tasks:
   search:
-    ? ''
-    : gsm8k-ro
+    task0: gsm8k-ro
   test:
-    ? ''
-    : gsm8k-ro
+    task0: gsm8k-ro
