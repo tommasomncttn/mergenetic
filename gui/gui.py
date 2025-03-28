@@ -103,9 +103,9 @@ def apply_configuration(config, eval_method, merge_type, run_id, base_model, dev
         # Single language configuration
         updated_fields.extend([
             2,  # Default n_langs for multilingual (won't be used in single mode)
-            config.get("langs", [lang_single.value])[0],
-            config.get("models", {}).get(config.get("langs", [lang_single.value])[0], model_path_single.value),
-            config.get("tasks", {}).get("search", {}).get(config.get("langs", [lang_single.value])[0], task_name_single.value),
+            "",  # Always use empty string for lang_single
+            config.get("models", {}).get("", model_path_single.value),
+            config.get("tasks", {}).get("search", {}).get("", task_name_single.value),
             config.get("metric", metric_single.value),
             config.get("additional_templates_folder", additional_templates_folder_single.value),
         ])
@@ -232,7 +232,7 @@ def load_and_apply_configuration(
         
         # Single language fields (not used in multi mode, but need to be set)
         updated_fields.extend([
-            lang_single,  # Language ID (unused)
+            "",  # Language ID (unused)
             model_path_single,  # Model path (unused)
             task_name_single,  # Task name (unused)
             config.get("metric", metric),  # Metric
@@ -240,18 +240,18 @@ def load_and_apply_configuration(
         ])
     else:
         # For single-task mode
-        langs = config.get("langs", ["en"])  # Default to "en" if not specified
-        first_lang = langs[0] if langs else "en"
+        langs = config.get("langs", [""])  # Default to empty string if not specified
+        first_lang = langs[0] if langs else ""
         
         # Use explicit model and task from config, or defaults
         single_model_path = models_dict.get(first_lang, model_path_single)
         single_task_name = tasks_dict.get(first_lang, task_name_single)
         
-        logger.info(f"Single task - Lang: {first_lang}, Model: {single_model_path}, Task: {single_task_name}")
+        logger.info(f"Single task - Lang: '{first_lang}', Model: {single_model_path}, Task: {single_task_name}")
         
         updated_fields.extend([
             2,  # Default n_langs value (not used for single mode)
-            first_lang,  # The language ID
+            "",  # Always use empty string for lang_single
             single_model_path,  # Model path
             single_task_name,  # Task name
             config.get("metric", metric),  # Metric
@@ -300,7 +300,7 @@ def load_and_apply_configuration(
             logger.info(f"Setting task {i}: ID={task_key}, Model={model_values[i]}, Task={task_values[i]}")
     else:
         # For single task, only update the first component
-        first_lang = config.get("langs", ["en"])[0]
+        first_lang = config.get("langs", [""])[0]
         
         # Only update the first slot
         lang_values[0] = first_lang
@@ -457,18 +457,18 @@ def create_interface():
                         choices=evaluation_modes,
                         label="Evaluation Mode",
                         value="gmpirt",
-                        info="Select the evaluation mode algorithm"
+                        info="Select the evaluation method"
                     )
                     bench = gr.Dropdown(
                         choices=allowed_benchmarks,
                         label="Benchmark Type",
                         value="gsm8k",
-                        info="Select the benchmark type (disabled for random mode)"
+                        info="Select the benchmark type for ability estimation (disabled for random mode)"
                     )
                     metric = gr.Textbox(
                         label="Evaluation Metric",
                         value="exact_match",
-                        info="Metric to use for evaluation (e.g., exact_match, f1)"
+                        info="Metric to use for evaluation in lm-eval (e.g., exact_match, acc, acc_norm, f1)"
                     )
                 
                 # Step 2: Basic Configuration - with improved title spacing
@@ -488,7 +488,7 @@ def create_interface():
                     )
                     base_model = gr.Textbox(
                         label="Base Model Path",
-                        value="meta-llama/Llama-2-7b-hf",
+                        value="mistralai/Mistral-7B-v0.1",
                         info="Path to the base model"
                     )
                     device = gr.Textbox(
@@ -565,11 +565,14 @@ def create_interface():
                     
                     # Single language configuration
                     with gr.Group() as single_group:
+                        # Keep the lang_single field but make it invisible
                         lang_single = gr.Textbox(
                             label="Language ID",
-                            value="en",
+                            value="",  # Default to empty string
+                            visible=False,  # Hide it from the UI
                             info="Identifier for the language"
                         )
+                        
                         model_path_single = gr.Textbox(
                             label="Model Path",
                             value="model_en",
@@ -592,9 +595,9 @@ def create_interface():
                                 info="Metric to use for evaluation"
                             )
                             additional_templates_folder_single = gr.Textbox(
-                                label="Additional Templates Folder",
+                                label="Additional Tasks Folder",
                                 value="lm_tasks",
-                                info="Folder containing additional templates"
+                                info="Folder containing additional lm-eval tasks"
                             )
                     
                     # Common settings now only contain the metric field that's used by both tabs
@@ -722,13 +725,13 @@ def create_interface():
                             }
                             config["additional_templates_folder"] = additional_templates_folder_single_val
                         else:
-                            # For single-task mode
-                            config["langs"] = [lang_single_val]
-                            config["models"] = {lang_single_val: model_path_single_val}
+                            # For single-task mode - use empty string as language ID
+                            config["langs"] = [""]
+                            config["models"] = {"": model_path_single_val}
                             
                             config["tasks"] = {
-                                "search": {lang_single_val: task_name_single_val},
-                                "test": {lang_single_val: task_name_single_val}
+                                "search": {"": task_name_single_val},
+                                "test": {"": task_name_single_val}
                             }
                             config["additional_templates_folder"] = additional_templates_folder_single_val
                         
@@ -962,15 +965,15 @@ def create_interface():
                 }
                 config["additional_templates_folder"] = additional_templates_folder_single_val
             else:
-                # Single language configuration
-                config["langs"] = [lang_single_val]
-                config["models"] = {lang_single_val: model_path_single_val}
+                # Single language configuration - use empty string for language ID
+                config["langs"] = [""]
+                config["models"] = {"": model_path_single_val}
                 
                 # Single language LM-Eval configuration - fix for YAML anchors
                 config["tasks"] = {
-                    "search": {lang_single_val: task_name_single_val},
+                    "search": {"": task_name_single_val},
                     # Create a distinct copy to avoid YAML anchors
-                    "test": {lang_single_val: task_name_single_val}
+                    "test": {"": task_name_single_val}
                 }
                 config["additional_templates_folder"] = additional_templates_folder_single_val
             
