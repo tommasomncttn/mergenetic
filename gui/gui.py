@@ -315,27 +315,10 @@ def load_and_apply_configuration(
     # Step 5: Generate YAML preview
     yaml_str = yaml.dump(config, default_flow_style=False, sort_keys=False)
     
-    # Create detailed info message showing what was loaded
+    # Create a more compact message format
     message = f'''
-    <div style="padding: 1rem; background-color: #e8f5e9; border-radius: 0.5rem; margin: 0.5rem 0; border: 1px solid #81c784;">
-        <h3 style="color: #2e7d32; margin-top: 0;">Configuration Loaded: {run_id_val}</h3>
-        <div style="color: #1b5e20; margin: 0.5rem 0;">
-            <p><strong>Base model:</strong> {base_model_val}</p>
-            <p><strong>Mode:</strong> {config.get("mode", "unknown")} | <strong>Metric:</strong> {config.get("metric", "unknown")}</p>
-        </div>
-        <div style="color: #1b5e20; margin-top: 0.5rem;">
-            <h4 style="margin: 0.5rem 0;">Task Configuration:</h4>
-            <ul style="margin: 0.25rem 0;">
-    '''
-    
-    # Add task details to message
-    for i, (task_key, task_value) in enumerate(tasks_dict.items()):
-        model = models_dict.get(task_key, "unknown")
-        message += f'<li><strong>Task {i+1}:</strong> ID={task_key}, Model="{model}", Task="{task_value}"</li>'
-    
-    message += '''
-            </ul>
-        </div>
+    <div style="padding: 0.5rem; background-color: #e8f5e9; border-radius: 0.5rem; margin: 0.25rem 0; border: 1px solid #81c784; font-size: 0.9rem;">
+        <span style="color: #2e7d32; font-weight: bold;">✅ Configuration Loaded</span>
     </div>
     '''
     
@@ -440,28 +423,25 @@ def create_interface():
                 
                 # Load existing configuration section - Step 0
                 with gr.Group(visible=True) as step_0_group:
-                    # Improved layout for the load/refresh configuration buttons
                     gr.Markdown('<h2 style="margin: 0.5rem 0.5rem;">Load Configuration</h2>')
-                    with gr.Row():
-                        config_dropdown = gr.Dropdown(
-                            choices=list_configurations(),
-                            label="Load Existing Configuration",
-                            info="Select a previously created configuration to load",
-                            value="-- New Configuration --"
-                        )
+                    
+                    # Put dropdown and refresh button in the same row
+                    with gr.Row(equal_height=True):
+                        with gr.Column(scale=8):
+                            config_dropdown = gr.Dropdown(
+                                choices=list_configurations(),
+                                label="Select Configuration",
+                                info="Select a configuration to load or choose '--New Configuration--' to create a new one",
+                                value="-- New Configuration --"
+                            )
+                        with gr.Column(scale=1, min_width=50):
+                            refresh_btn = gr.Button("🔄", variant="secondary", min_width=50)
                     
                     # Add feedback message area
                     config_load_message = gr.HTML(
                         value="",
                         elem_id="config_load_message"
                     )
-                    
-                    # Place both buttons in the same row with equal width
-                    with gr.Row(equal_height=True):
-                        with gr.Column(scale=1):
-                            load_btn = gr.Button("Load Selected Configuration", variant="secondary", scale=1, min_width=250)
-                        with gr.Column(scale=1):
-                            refresh_btn = gr.Button("🔄 Refresh", variant="secondary", scale=1, min_width=250)
 
                 # Step 1: Evaluation Method - with improved title spacing
                 with gr.Group(visible=False) as step_1_group:
@@ -1115,7 +1095,7 @@ def create_interface():
         )
         
         # Replace the existing load button connection logic - add message to outputs
-        load_btn.click(
+        config_dropdown.change(
             fn=load_and_apply_configuration,
             inputs=[
                 config_dropdown,
