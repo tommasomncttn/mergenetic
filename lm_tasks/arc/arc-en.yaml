@@ -1,0 +1,6 @@
+include: arc_easy.yaml
+task: arc_en
+dataset_name: ARC-Challenge
+process_docs: !function utils.process_docs_test
+dataset_kwargs:
+  trust_remote_code: true

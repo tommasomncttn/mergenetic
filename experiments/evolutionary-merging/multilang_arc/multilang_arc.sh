@@ -1,0 +1,1 @@
+python3 experiments/evolutionary-merging/end2end_multilingual.py --config experiments/evolutionary-merging/multilang_arc/multilang_arc.yaml

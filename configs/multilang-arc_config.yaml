@@ -1,0 +1,34 @@
+additional_templates_folder: lm_tasks
+base_model: mistralai/Mistral-7B-v0.1
+bench: gsm8k
+device: cuda
+dtype: float16
+eval_batch_size: 16
+langs:
+  - ''
+metric: exact_match
+mode: gmpirt
+models:
+  task0: LeoLM/leo-mistral-hessianai-7b
+  task1: mistralai/Mistral-7B-v0.1
+  task2: DeepMount00/Mistral-Ita-7b
+  task3: BramVanroy/GEITje-7B-ultra
+n_iter: 10
+n_samples: 10
+path_to_store_config: /mnt/ssd1/adrian/projects/mergenetic/configs
+path_to_store_merged_model: /mnt/ssd1/adrian/projects/mergenetic/models
+pop_size: 10
+run_id: multilang-arc2
+seed: 42
+task_type: MULTIPLE_CHOICE
+tasks:
+  search:
+    task0: arc_de
+    task1: arc_en
+    task2: arc_it
+    task3: arc_nl
+  test:
+    task0: arc_de
+    task1: arc_en
+    task2: arc_it
+    task3: arc_nl

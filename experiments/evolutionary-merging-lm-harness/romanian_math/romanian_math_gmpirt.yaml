@@ -1,0 +1,28 @@
+# Required parameters
+pop_size: 1  # int
+n_iter:   1   # int
+models:                            # List[str]
+  ro: "meta-math/MetaMath-Mistral-7B"
+base_model: "OpenLLM-Ro/RoMistral-7b-Instruct"
+path_to_store_merged_model: "experiments/models/merged/"  # str
+path_to_store_config: "experiments/evolutionary-merging-lm-harness/"          # str
+dtype: "float16"                                  # str
+run_id: "romanian_math_gmpirt"                               # str
+bench: "gsm8k"                                   # str
+mode: "gmpirt"                                   # str
+seed: 420                                         # int
+langs:
+  - ro
+tasks:
+  search: 
+    ro: "gsm8k-ro"
+    base: "gsm8k-ro"
+  test: 
+    ro: "gsm8k-ro"
+metric: "exact_match"                               # str, default="acc"
+# Optional parameters
+device: "cuda:2"  # str | None
+n_samples: 10
+task_type: "FG_MATH"
+eval_batch_size: 64                             # int, default=8
+additional_templates_folder: "lm_tasks"

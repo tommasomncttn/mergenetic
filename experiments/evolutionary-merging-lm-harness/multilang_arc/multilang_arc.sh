@@ -1,0 +1,1 @@
+python3 experiments/evolutionary-merging-lm-harness/end2end_multilingual.py --config experiments/evolutionary-merging-lm-harness/multilang_arc/multilang_arc.yaml

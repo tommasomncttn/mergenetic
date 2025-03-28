@@ -1,0 +1,39 @@
+# Required parameters
+pop_size: 1  # int
+n_iter:   1   # int
+path_to_store_merged_model: "experiments/models/merged/"  # str
+path_to_store_config: "experiments/evolutionary-merging/multilang_arc/"          # str
+dtype: "bfloat16"                                  # str
+run_id: "multilang_arc_gmpirt"                               # str
+bench: "arc"                                   # str
+mode: "gmpirt"                                   # str
+seed: 420                                         # int
+n_samples: 10
+eval_batch_size: 32
+
+# Optional parameters
+device: "cuda:2"  # str 
+
+langs: 
+  - "it"
+  - "nl"
+  - "de"
+  - "en"
+
+# Optional Evaluation parameters
+models:                            # List[str], default=[]
+  it: "DeepMount00/Mistral-Ita-7b"
+  nl: "BramVanroy/GEITje-7B-ultra"
+  de: "LeoLM/leo-mistral-hessianai-7b"
+  en: "mistralai/Mistral-7B-v0.1"
+
+task_type: "MULTIPLECHOICE"                               # str, default=""
+eval_batch_size: 32                             # int, default=8
+datasets: 
+  it: "data/new_datasets/arc/arc_test_italian.csv"
+  nl: "data/new_datasets/arc/arc_test_dutch.csv"
+  de: "data/new_datasets/arc/arc_test_german.csv"
+  en: "data/new_datasets/arc/arc_test_english.csv"
+  base: "data/new_datasets/arc/arc_test_english.csv"
+
+base_model: "mistralai/Mistral-7B-v0.1"

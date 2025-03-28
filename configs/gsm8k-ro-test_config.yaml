@@ -1,0 +1,24 @@
+additional_templates_folder: lm_tasks
+base_model: meta-math/MetaMath-Mistral-7B
+device: cuda:2
+dtype: float16
+eval_batch_size: 16
+langs:
+- ro
+metric: acc
+mode: random
+models:
+  ro: OpenLLM-Ro/RoMistral-7b-Instruct
+n_iter: 10
+n_samples: 10
+path_to_store_config: configs
+path_to_store_merged_model: models
+pop_size: 10
+run_id: gsm8k-ro-test
+seed: 42
+task_type: lm_eval
+tasks:
+  search:
+    ro: gsm8k-ro
+  test:
+    ro: gsm8k-ro
