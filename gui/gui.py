@@ -599,7 +599,8 @@ def create_interface():
                             )
                             metric_single = gr.Textbox(
                                 label="Metric",
-                                value="exact_match",
+                                value="exact_match",                                
+                                visible=False,
                                 info="Metric to use for evaluation"
                             )
                             additional_templates_folder_single = gr.Textbox(

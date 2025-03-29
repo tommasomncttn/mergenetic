@@ -43,19 +43,22 @@ def main(config: ConfigLmEval):
     
     logger.info(f"STEP 1 completed: Anchors extracted: {anchors}")
 
-    thetas_paths = {k: f"{config.path_to_store_config}/{m.split('/')[-1]}_{k}_theta.pkl" for k, m in config.models.items()}
+    if config.mode != "random":
+        thetas_paths = {k: f"{config.path_to_store_config}/{m.split('/')[-1]}_{k}_theta.pkl" for k, m in config.models.items()}
 
-    if all(os.path.exists(thetas_paths[l]) for l in config.langs):
-        logger.info(f"Thetas for {lang_id} already exist. Loading them.")
+        if all(os.path.exists(thetas_paths[l]) for l in config.langs):
+            logger.info(f"Thetas for {lang_id} already exist. Loading them.")
+            thetas = retrieve_thetas(config)
+        else:
+            # STEP 3. Get the responses of the base models
+            _ = evaluate_models_lm_harness(config)
+            logger.info("STEP 2 completed: Predictions of base models obtained")
+
+        # STEP 3. Get the thetas 
         thetas = retrieve_thetas(config)
+        logger.info("STEP 3 completed: Thetas obtained")
     else:
-        # STEP 3. Get the responses of the base models
-        _ = evaluate_models_lm_harness(config)
-        logger.info("STEP 2 completed: Predictions of base models obtained")
-
-    # STEP 3. Get the thetas 
-    thetas = retrieve_thetas(config)
-    logger.info("STEP 3 completed: Thetas obtained")
+        thetas = {}
 
     # STEP 4. Unpack some parameters and set the accuracy estimation parameters
     pop_size = config.pop_size
@@ -64,7 +67,7 @@ def main(config: ConfigLmEval):
     bench = config.bench
     mode = config.mode
 
-    thetas_list = list(thetas.values())
+    thetas_list = list(thetas.values()) if thetas else []
     est_parameters = ConfigPE(
         thetas=thetas_list, 
         weights=anchors_weights, 

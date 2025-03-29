@@ -1,0 +1,30 @@
+base_model: OpenLLM-Ro/RoMistral-7b-Instruct
+dtype: float16
+merge_method: slerp
+parameters:
+  t:
+  - filter: self_attn
+    value:
+    - 0.6
+    - 1.0
+    - 0.7
+    - 1.0
+    - 0.4
+  - filter: mlp
+    value:
+    - 0.4
+    - 0.3
+    - 0.9
+    - 0.9
+    - 0.7
+  - value: 0.9
+slices:
+- sources:
+  - layer_range:
+    - 0
+    - 32
+    model: OpenLLM-Ro/RoMistral-7b-Instruct
+  - layer_range:
+    - 0
+    - 32
+    model: meta-math/MetaMath-Mistral-7B

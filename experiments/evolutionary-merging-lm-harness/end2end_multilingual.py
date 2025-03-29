@@ -25,12 +25,17 @@ logger = getLogger(__name__)
 
 def main(config: ConfigLmEval):
     
-    evaluate_models_lm_harness(config)
-    logger.info("STEP 1 completed: Predictions of base models obtained")
+    if config.mode != "random":
+        evaluate_models_lm_harness(config)
+        logger.info("STEP 1 completed: Predictions of base models obtained")
 
-    # STEP 2. Get the thetas 
-    thetas = retrieve_thetas(config)
-    logger.info("STEP 2 completed: Thetas obtained")
+        # STEP 2. Get the thetas 
+        thetas = retrieve_thetas(config)
+        logger.info("STEP 2 completed: Thetas obtained")
+    else:
+        thetas = {}
+        for lang in config.langs:
+            thetas[lang] = []
 
     # STEP 3. Extract the anchor points
     anchors = {}
