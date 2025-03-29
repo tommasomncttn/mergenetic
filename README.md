@@ -189,7 +189,18 @@ The Gradio-based GUI allows users to **configure and launch merging experiments*
 
 ---
 
+## Tutorial 
 
+If you are looking for a brief introduction to the library you can watch our YouTube tutorial:
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=lazoVeP7ku8">
+    <img src="https://img.youtube.com/vi/lazoVeP7ku8/0.jpg" alt="Watch the video">
+  </a>
+</p>
+
+
+---
 ## 📒 Learn More
 - [mergekit](https://github.com/arcee-ai/mergekit)
 - [pymoo](https://github.com/anyoptimization/pymoo)
