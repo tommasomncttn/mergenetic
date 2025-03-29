@@ -3,6 +3,9 @@ from typing import List, Optional, Union
 import pandas as pd
 import re
 
+from logging import getLogger
+logger = getLogger(__name__)
+
 def extract_numbers(sentence: str, only_last_number: bool = True) -> Optional[Union[str, List[str]]]:
     """
     Extracts numbers from a sentence.
@@ -48,7 +51,11 @@ class MCEvaluator(BaseEvaluator):
         self.language_id = language_id 
 
         if self.language_id:
-            self.lang_detector = LanguageDetector([self.language_id])
+            try:
+                self.lang_detector = LanguageDetector([self.language_id])
+            except Exception as e:
+                logger.warning(f"Language detection disabled: {e}")
+                self.lang_detector = None
 
     def get_correctness(self, dataframe: pd.DataFrame) -> pd.Series:
         """

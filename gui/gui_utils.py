@@ -7,12 +7,8 @@ import psutil
 import importlib.util
 from pathlib import Path
 
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
+import os
+
 # Configure specific loggers
 logger = logging.getLogger("mergenetic.utils")
 # Set httpx logger to WARNING to avoid the HTTP request info messages
@@ -93,8 +89,15 @@ def run_experiment(script_path, config_file, run_id):
                 "--run_id",
                 run_id
             ],
-            stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            stdout=subprocess.PIPE,
+            preexec_fn=os.setsid,
+            close_fds=True,
+            env={
+                **os.environ,
+                "PYTHONUNBUFFERED": "1",  # Force stdout and stderr to be unbuffered
+            },
+            # Redirect stdout and stderr to the same stream
             text=True,
             bufsize=1
         )
@@ -110,6 +113,7 @@ def run_experiment(script_path, config_file, run_id):
             yield "\n".join(log_output)
         
         process.stdout.close()
+        process.stderr.close()
         return_code = process.wait()
         
         # Clear the current process reference

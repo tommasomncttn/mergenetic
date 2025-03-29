@@ -330,9 +330,9 @@ def create_interface():
     # Get available LM-Eval tasks
     lm_eval_tasks = get_lm_eval_tasks()
     
-    # Define allowed benchmark types for non-random modes
+    # Define allowed benchmark types for non-mean modes
     allowed_benchmarks = ["arc", "gsm8k", "hellaswag", "mmlu", "truthfulqa", "winogrande"]
-    evaluation_modes = ["random", "irt", "pirt", "mpirt", "gmpirt"]
+    evaluation_modes = ["mean", "irt", "pirt", "mpirt", "gmpirt"]
     
     # Initialize input collection lists before UI components are created
     lang_inputs = []
@@ -340,8 +340,8 @@ def create_interface():
     task_inputs = []
     
     with gr.Blocks(title="Mergenetic GUI", css="h2, h3 { margin-top: 1rem; padding-top: 1rem; }") as interface:
-        gr.Markdown("# Mergenetic Model Merging Interface")
-        gr.Markdown("Configure and run model merging experiments with this visual interface.")
+        gr.Markdown("# Mergenetic Evolutionary Model Merging")
+        gr.Markdown("Configure and run evolutionary model merging experiments with this visual interface.")
         
         # Add state to track if a configuration has been generated
         config_generated = gr.State(value=False)
@@ -463,7 +463,7 @@ def create_interface():
                         choices=allowed_benchmarks,
                         label="Benchmark Type",
                         value="gsm8k",
-                        info="Select the benchmark type for ability estimation (disabled for random mode)"
+                        info="Select the benchmark type for ability estimation (disabled for mean mode)"
                     )
                     metric = gr.Textbox(
                         label="Evaluation Metric",
@@ -682,9 +682,9 @@ def create_interface():
                         metric_single_val, additional_templates_folder_single_val,
                         bench_val, mode_val, metric_val, *args
                     ):
-                        # Handle benchmark value for random mode
-                        if mode_val == "random":
-                            bench_val = ""  # Not used in random mode
+                        # Handle benchmark value for mean mode
+                        if mode_val == "mean":
+                            bench_val = ""  # Not used in mean mode
                         
                         # Basic config structure
                         config = {
@@ -703,8 +703,8 @@ def create_interface():
                             "metric": metric_val,
                         }
                         
-                        # Only include benchmark if it's not random mode
-                        if mode_val != "random" and bench_val:
+                        # Only include benchmark if it's not mean mode
+                        if mode_val != "mean" and bench_val:
                             config["bench"] = bench_val
                         
                         # Extract multi-language inputs
@@ -886,21 +886,21 @@ def create_interface():
         
         # Function to update benchmark type visibility and choices based on evaluation mode
         def update_benchmark_visibility(mode_val):
-            is_random = mode_val == "random"
+            is_mean = mode_val == "mean"
             
-            if is_random:
-                # For random mode: disable the dropdown, set empty value, and include empty string option
+            if is_mean:
+                # For mean mode: disable the dropdown, set empty value, and include empty string option
                 return gr.update(
                     interactive=False, 
                     value="",
                     choices=[""] + allowed_benchmarks  # Include empty string as first option
                 )
             else:
-                # For non-random modes: enable dropdown, keep gsm8k as default value
+                # For non-mean modes: enable dropdown, keep gsm8k as default value
                 return gr.update(
                     interactive=True,
                     value="gsm8k",
-                    choices=allowed_benchmarks  # Only allowed benchmarks for non-random modes
+                    choices=allowed_benchmarks  # Only allowed benchmarks for non-mean modes
                 )
         
         # Connect mode change to benchmark visibility update
@@ -919,9 +919,9 @@ def create_interface():
             metric_single_val, additional_templates_folder_single_val,
             bench_val, mode_val, metric_val, *args
         ):
-            # Handle benchmark value for random mode
-            if mode_val == "random":
-                bench_val = ""  # Not used in random mode
+            # Handle benchmark value for mean mode
+            if mode_val == "mean":
+                bench_val = ""  # Not used in mean mode
             
             # Basic config common to all setups
             config = {
@@ -941,8 +941,8 @@ def create_interface():
                 "metric": metric_val,
             }
             
-            # Only include benchmark if it's not random mode
-            if mode_val != "random" and bench_val:
+            # Only include benchmark if it's not mean mode
+            if mode_val != "mean" and bench_val:
                 config["bench"] = bench_val
             
             # Extract multi-language inputs from args

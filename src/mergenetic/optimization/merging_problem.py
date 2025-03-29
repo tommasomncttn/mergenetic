@@ -15,7 +15,6 @@ from typing import Dict, Optional
 from mergenetic.merging.merger import Merger
 
 from logging import getLogger
-
 logger = getLogger(__name__)
 
 class BaseMergingProblem(ABC, Problem):
@@ -34,7 +33,7 @@ class BaseMergingProblem(ABC, Problem):
                  eval_batch_size: int = 5,
                  discrete: bool = False,
                  device: str = "cuda",
-                 load_in_4bit: bool = False,
+                 load_in_4bit: bool = True,
                  use_lm_eval: bool = False,  # Flag for using lm-eval-harness (HFLM)
                  verbose_evaluation: bool = True,
                  test_mode: bool = False,
@@ -54,6 +53,9 @@ class BaseMergingProblem(ABC, Problem):
         self.custom_prompt_template = custom_prompt_template or False
         self.n_eq_constr = n_eq_constr
         self.n_ieq_constr = n_ieq_constr
+
+        if self.load_in_4bit:
+            logger.info("Loading model in 4bit...")
 
         # Adjust bounds for discrete search
         if self.discrete:
@@ -77,13 +79,14 @@ class BaseMergingProblem(ABC, Problem):
 
     def _from_array_to_genotype(self, x: np.array) -> Path:
         """Convert an array representation to a model configuration."""
+        logger.info(f"Converting genotype to configuration: {x}")
         path_to_config = self.merger.create_individual_configuration(x)
         return self.merger.merge_model_from_configuration(path_to_config, cuda=self.device is not None and "cuda" in self.device)
 
     def load_model(self, path: str, verbose: bool = True) -> HFLM | tuple[AutoModelForCausalLM, AutoTokenizer]:
         """Loads a model and tokenizer using either Hugging Face or HFLM."""
-        if verbose:
-            logger.debug(f"Loading model from: {path}")
+        logger.info(f"Loading model from: {path}")
+        logger.info(f"On device: {self.device}. Load in 4bit: {self.load_in_4bit}")
 
         device = self.device if self.device is not None else "cpu"
         load_on_gpu = "cuda" in device
@@ -136,12 +139,15 @@ class BaseMergingProblem(ABC, Problem):
         path_to_model = self._from_array_to_genotype(x)
         model = self.load_model(path_to_model)
         
+        logger.info(f"Evaluating model at step {self.step}: {x}")
         # Multi-objective fitness handling
         if self.use_lm_eval:
             f, description = self.metrics_4_genotype(model)
         else:
             model, tokenizer = model  # Unpack if not using HFLM
             f, description = self.metrics_4_genotype(model, tokenizer)
+
+        logger.info(f"Model evaluation results: {f}")
 
         out["F"] = f
         self.step += 1
@@ -160,9 +166,6 @@ class BaseMergingProblem(ABC, Problem):
 
         del model
         torch.cuda.empty_cache()
-
-        if self.verbose_evaluation:
-            logger.info(f"Step {self.step}: Metric f: {f}")
             
         if description:
             logger.debug(f"Individual {x} description: {description}")

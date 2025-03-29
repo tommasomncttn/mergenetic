@@ -1,9 +1,10 @@
-from mergenetic.estimator.perf_estimation import PerformanceEstimationParameters, PerformanceEstimator
 from mergenetic.evaluation import BaseMultiObjectiveEvaluator, LanguageDetector
 from typing import List, Dict, Union, Tuple
-from dataclasses import dataclass
 import pandas as pd
 import re
+
+from logging import getLogger
+logger = getLogger(__name__)
 
 # =========================================
 # MULTILINGUAL MULTIPLE CHOICE EVALUATOR
@@ -33,7 +34,11 @@ class MultilingualMCEvaluator(BaseMultiObjectiveEvaluator):
         self.validate_lang = validate_lang
 
         if validate_lang:
-            self.lang_detector = LanguageDetector(language_ids)
+            try:
+                self.lang_detector = LanguageDetector(language_ids)
+            except Exception as e:
+                logger.warning(f"Language detection disabled: {e}")
+                self.lang_detector = None
         else:
             self.lang_detector = None
 

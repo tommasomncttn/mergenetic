@@ -92,7 +92,7 @@ class LanguageDetector:
         
         unsupported_languages = [lang for lang in langs if lang not in self.SUPPORTED_LANGUAGES]
         if unsupported_languages:
-            raise ValueError(f"Unsupported languages detected: {unsupported_languages}. Use one of {self.SUPPORTED_LANGUAGES}")
+            raise ValueError(f"Unsupported languages detected: {unsupported_languages}.")
 
 
     def _get_language(self, text: str) -> str:
@@ -117,3 +117,14 @@ class LanguageDetector:
         elif confidence[0] < 0.5:
             return self.detector.predict(" ".join(text_clean.split()[1:]))[0]
         return pred_lang[0] if confidence[0] >= 0.5 else "UNK"
+    
+    def get_supported_languages(self) -> set[str]:
+        """
+        Returns the set of supported languages.
+
+        Returns
+        -------
+        set[str]
+            Set of supported languages.
+        """
+        return self.SUPPORTED_LANGUAGES

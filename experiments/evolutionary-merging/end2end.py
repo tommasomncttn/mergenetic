@@ -97,6 +97,7 @@ def main(config: Config):
                                     n_eq_constr=0,
                                     n_ieq_constr=0,
                                     discrete=True,
+                                    load_in_4bit=True,
                                     eval_batch_size=config.eval_batch_size,
                                     )
     logger.info("STEP 8 completed: Problem defined")

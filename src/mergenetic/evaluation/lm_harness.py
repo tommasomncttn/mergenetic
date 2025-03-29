@@ -57,7 +57,12 @@ class LmHarnessEvaluator:
             logger.warning("Disabling language detection for multiple choice tasks.")
             lang_id = None
 
-        self.lang_detector = LanguageDetector([lang_id]) if lang_id is not None else None
+        try:
+            self.lang_detector = LanguageDetector([lang_id]) if lang_id is not None else None
+        except Exception as e:
+            logger.warning(f"Language detection is disabled. Error: {e}")
+            self.lang_detector = None
+
         self.correctness_metric = correctness_metric
         self.task_nm = task_name
         self.lang_id = lang_id

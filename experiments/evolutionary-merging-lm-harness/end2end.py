@@ -23,10 +23,18 @@ from lm_eval.tasks import TaskManager
 from lm_eval.api.task import ConfigurableTask
 
 import os
-import logging
-from logging import getLogger
+import sys
 
-logging.basicConfig(level=logging.INFO)
+# Set up logging, instead of sending logs to stderr, use stdout
+# and set the format to include the timestamp, level, and message
+from logging import getLogger
+import logging
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    handlers=[logging.StreamHandler(
+                        sys.stdout
+                    )], force=True)
 logger = getLogger(__name__)
 
 def main(config: ConfigLmEval):
@@ -43,7 +51,7 @@ def main(config: ConfigLmEval):
     
     logger.info(f"STEP 1 completed: Anchors extracted: {anchors}")
 
-    if config.mode != "random":
+    if config.mode != "mean":
         thetas_paths = {k: f"{config.path_to_store_config}/{m.split('/')[-1]}_{k}_theta.pkl" for k, m in config.models.items()}
 
         if all(os.path.exists(thetas_paths[l]) for l in config.langs):
@@ -112,6 +120,7 @@ def main(config: ConfigLmEval):
                                     n_eq_constr=0,
                                     n_ieq_constr=0,
                                     discrete=True,
+                                    load_in_4bit=True,
                                     eval_batch_size=config.eval_batch_size,
                                     additional_templates_folder=config.additional_templates_folder,
                                     )

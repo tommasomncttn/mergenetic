@@ -1,11 +1,10 @@
 # import required modules
 from pymoo.algorithms.moo.nsga2 import NSGA2
-from logging import getLogger
-import logging
 
-import argparse
 import numpy as np
+import argparse
 import yaml
+import sys
 
 from mergenetic.merging import TiesDareMerger
 from mergenetic.optimization.predefined_problems import MultilingualMergingProblem, ConfigMultiLingualPE
@@ -20,12 +19,22 @@ from mergenetic import PROJECT_ROOT
 from lm_eval.tasks import TaskManager
 from lm_eval.api.task import ConfigurableTask
 
-logging.basicConfig(level=logging.INFO)
+# Set up logging, instead of sending logs to stderr, use stdout
+# and set the format to include the timestamp, level, and message
+from logging import getLogger
+import logging
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    handlers=[logging.StreamHandler(
+                        sys.stdout
+                    )], force=True)
+
 logger = getLogger(__name__)
 
 def main(config: ConfigLmEval):
     
-    if config.mode != "random":
+    if config.mode != "mean":
         evaluate_models_lm_harness(config)
         logger.info("STEP 1 completed: Predictions of base models obtained")
 
@@ -107,6 +116,7 @@ def main(config: ConfigLmEval):
                                     eval_batch_size=config.eval_batch_size,
                                     device=device,
                                     detect_lang=False,
+                                    load_in_4bit=True,
                                     additional_templates_folder=config.additional_templates_folder,
                                     )
     
