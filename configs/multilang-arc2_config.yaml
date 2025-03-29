@@ -1,6 +1,6 @@
 additional_templates_folder: lm_tasks
 base_model: mistralai/Mistral-7B-v0.1
-bench: gsm8k
+bench: arc
 device: cuda
 dtype: float16
 eval_batch_size: 16
@@ -9,7 +9,7 @@ langs:
 - task1
 - task2
 - task3
-metric: exact_match
+metric: acc
 mode: gmpirt
 models:
   task0: LeoLM/leo-mistral-hessianai-7b

@@ -974,9 +974,9 @@ def create_interface():
                 # Use the multi-task additional templates folder
                 config["additional_templates_folder"] = additional_templates_folder_multi.value
             else:
-                # Single language configuration - use empty string for language ID
-                config["langs"] = [""]
-                config["models"] = {"": model_path_single_val}
+                # Single language configuration - use task0 for language ID
+                config["langs"] = ["task0"]
+                config["models"] = {"task0": model_path_single_val}
                 
                 # Single language LM-Eval configuration - fix for YAML anchors
                 config["tasks"] = {

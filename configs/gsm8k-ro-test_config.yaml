@@ -4,8 +4,8 @@ device: cuda:2
 dtype: float16
 eval_batch_size: 16
 langs:
-  - task0
-metric: acc
+- task0
+metric: exact_match
 mode: random
 models:
   task0: OpenLLM-Ro/RoMistral-7b-Instruct
