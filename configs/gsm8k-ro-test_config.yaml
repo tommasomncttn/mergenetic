@@ -1,6 +1,6 @@
 additional_templates_folder: lm_tasks
 base_model: OpenLLM-Ro/RoMistral-7b-Instruct
-device: cuda:1
+device: cuda:0
 dtype: bfloat16
 eval_batch_size: 8
 langs:
