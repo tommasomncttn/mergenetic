@@ -113,7 +113,6 @@ def run_experiment(script_path, config_file, run_id):
             yield "\n".join(log_output)
         
         process.stdout.close()
-        process.stderr.close()
         return_code = process.wait()
         
         # Clear the current process reference

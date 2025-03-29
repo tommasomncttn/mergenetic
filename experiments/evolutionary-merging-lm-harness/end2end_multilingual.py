@@ -82,7 +82,7 @@ def main(config: ConfigLmEval):
     # STEP 5. Define the merger
     base_model = config.base_model
     model_paths = []
-    for key in config.datasets.keys():
+    for key in config.langs:
         model_paths.append(config.models[key])
     
     path_to_store_yaml = f"{config.path_to_store_config}/{config.run_id}/"

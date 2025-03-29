@@ -340,7 +340,7 @@ def create_interface():
     task_inputs = []
     
     with gr.Blocks(title="Mergenetic GUI", css="h2, h3 { margin-top: 1rem; padding-top: 1rem; }") as interface:
-        gr.Markdown("# Mergenetic Evolutionary Model Merging")
+        gr.Markdown("# Mergenetic: Evolutionary Model Merging")
         gr.Markdown("Configure and run evolutionary model merging experiments with this visual interface.")
         
         # Add state to track if a configuration has been generated
