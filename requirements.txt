@@ -15,4 +15,4 @@ plotly
 scikit-learn
 git-python
 git+https://github.com/EleutherAI/lm-evaluation-harness.git
-git+https://github.com/arcee-ai/mergekit.git
+git+https://github.com/teelinsan/mergekit.git
