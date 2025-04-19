@@ -1,0 +1,10 @@
+base_model: /media/donato/Extra-storage/Code/model-merging/mergenetic/notebooks/model/anakin87/gemma-2-2b-neogenesis-ita
+dtype: bfloat16
+merge_method: task_arithmetic
+models:
+- model: /media/donato/Extra-storage/Code/model-merging/mergenetic/notebooks/model/anakin87/gemma-2-2b-neogenesis-ita
+- model: /media/donato/Extra-storage/Code/model-merging/mergenetic/notebooks/model/lmassaron/gemma-2-2b-it-grpo-gsm8k
+  parameters:
+    weight: 0.6
+parameters:
+  int8_mask: true
