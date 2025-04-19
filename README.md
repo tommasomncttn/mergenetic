@@ -146,7 +146,7 @@ mergenetic/
 
 - 📓 *Tutorial notebook:* `notebooks/Cross_Lingual_Math_Merging.ipynb`
 - 🎞️ *Video walk‑through:* [YouTube (5 min)](https://www.youtube.com/watch?v=lazoVeP7ku8)
-- 🔗 Related repos: [mergekit] · [pymoo] · [lm‑eval‑harness]
+- 🔗 Related repos: [mergekit](https://github.com/arcee-ai/mergekit) · [pymoo](https://github.com/anyoptimization/pymoo) · [lm‑eval‑harness](https://github.com/EleutherAI/lm-evaluation-harness)
 
 
 
