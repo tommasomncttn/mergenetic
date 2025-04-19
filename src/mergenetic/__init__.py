@@ -4,6 +4,7 @@ from pathlib import Path
 import git
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -14,9 +15,9 @@ except git.exc.InvalidGitRepositoryError:
     PROJECT_ROOT = Path.cwd()
 
 try:
-    CACHE_DIR = Path(
-        git.Repo(Path.cwd(), search_parent_directories=True).working_dir
-    ) / "cache"
+    CACHE_DIR = (
+        Path(git.Repo(Path.cwd(), search_parent_directories=True).working_dir) / "cache"
+    )
 except git.exc.InvalidGitRepositoryError as e:
     # should use the predefined hugging-face directory
     logger.error(e)
@@ -25,8 +26,7 @@ except git.exc.InvalidGitRepositoryError as e:
 
 if "mergenetic" not in str(PROJECT_ROOT):
 
-    logger.warning("PROJECT_ROOT IS HARCODED AT ")
-    logger.warning(PROJECT_ROOT)
+    logger.warning(f"PROJECT_ROOT IS HARCODED AT {PROJECT_ROOT}")
     CACHE_DIR = PROJECT_ROOT / "cache"
 
 os.environ["PROJECT_ROOT"] = str(PROJECT_ROOT)
