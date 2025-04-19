@@ -108,7 +108,7 @@ class Merger(ABC):
         path_to_yaml: Path | str,
         cuda: str | None = None,
         copy_tokenizer: bool = True,
-        lazy_unpickle: bool = False,
+        lazy_unpickle: bool = True,
         low_cpu_memory=True,
     ) -> Path | str:
         """
