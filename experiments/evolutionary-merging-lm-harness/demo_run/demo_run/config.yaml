@@ -1,10 +1,30 @@
 base_model: /media/donato/Extra-storage/Code/model-merging/mergenetic/notebooks/model/anakin87/gemma-2-2b-neogenesis-ita
 dtype: bfloat16
-merge_method: task_arithmetic
-models:
-- model: /media/donato/Extra-storage/Code/model-merging/mergenetic/notebooks/model/anakin87/gemma-2-2b-neogenesis-ita
-- model: /media/donato/Extra-storage/Code/model-merging/mergenetic/notebooks/model/lmassaron/gemma-2-2b-it-grpo-gsm8k
-  parameters:
-    weight: 0.6
+merge_method: slerp
 parameters:
-  int8_mask: true
+  t:
+  - filter: self_attn
+    value:
+    - 0.6
+    - 1.0
+    - 0.4
+    - 0.9
+    - 0.6
+  - filter: mlp
+    value:
+    - 1.0
+    - 0.4
+    - 0.7
+    - 0.2
+    - 0.4
+  - value: 0.7
+slices:
+- sources:
+  - layer_range:
+    - 0
+    - 18
+    model: /media/donato/Extra-storage/Code/model-merging/mergenetic/notebooks/model/anakin87/gemma-2-2b-neogenesis-ita
+  - layer_range:
+    - 0
+    - 18
+    model: /media/donato/Extra-storage/Code/model-merging/mergenetic/notebooks/model/lmassaron/gemma-2-2b-it-grpo-gsm8k
