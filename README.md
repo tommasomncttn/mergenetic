@@ -4,19 +4,36 @@
 
 
 # 🧪 Mergenetic: Evolutionary Model Merging for LLMs
-![python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
-
-
 `mergenetic` is a flexible library for merging large language models (LLMs) via **evolutionary optimization**. It frames model merging as a black-box optimization problem and uses techniques like genetic algorithms and smart performance estimators to search for optimal weight combinations — enabling high-performance merges, even on consumer hardware.
 
-Powered by:
-- 🧠 [`mergekit`](https://github.com/arcee-ai/mergekit) for weight merging strategies
-- 🔍 [`pymoo`](https://github.com/anyoptimization/pymoo) for evolutionary algorithms
-- 📊 [`lm-eval-harness`](https://github.com/EleutherAI/lm-evaluation-harness) for evaluation
 
----
 
-## 🚀 Installation
+## ✨ Why Mergenetic?
+
+- **State‑of‑the‑art merging techniques** – linear soups, SLERP, TIES/DARE, Task Arithmetic and more.
+- **Hardware‑friendly** – search in *parameter space*, not *gradient space*; no model must fit in memory twice.
+- **Modular & hackable** – plug‑and‑play problems, searchers, mergers and evaluators.
+- **Familiar tools** under the hood – [`mergekit`](https://github.com/arcee-ai/mergekit) for merging, [`pymoo`](https://github.com/anyoptimization/pymoo) for optimisation, and [`lm‑eval‑harness`](https://github.com/EleutherAI/lm-evaluation-harness) for metrics.
+
+
+## 📚 Table of Contents
+
+1. [Installation](#installation)
+2. [Quickstart](#quickstart)
+3. [Key Concepts](#key-concepts)
+4. [Usage Examples](#usage-examples)
+   - [Python API](#python-api)
+   - [Command‑Line Interface](#command‑line-interface)
+   - [Graphical Interface](#graphical-interface)
+5. [Project Layout](#project-layout)
+6. [Learn More](#learn-more)
+7. [Contributing](#contributing)
+8. [Citation](#citation)
+9. [License](#license)
+
+
+
+## 🛠️ Installation
 
 ```bash
 conda create --name mergenetic python=3.11 -y
@@ -25,106 +42,48 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
----
-
-## 📆 Core Features
-
-- Support for merging 2+ models using:
-  - Linear (Model Soups)
-  - SLERP
-  - TIES / DARE
-  - Task Arithmetic
-- Compatible with Hugging Face checkpoints
-- Built-in support for LM-Eval-Harness tasks
-- Fitness estimation using IRT, random sampling, or full evaluation
-- Modular `Searcher`, `Problem`, and `Merger` classes for custom workflows
-
----
-
-## 🪐 Supported Merging Method
-
-A quick overview of the currently supported merge methods from [mergekit](https://github.com/arcee-ai/mergekit/tree/main):
-
-| Method                                                                                           | Multi-Model | Uses base model |
-| ------------------------------------------------------------------------------------------------ | ----------- | --------------- |
-| Linear ([Model Soups](https://arxiv.org/abs/2203.05482))                                         | ✅          | ❌              |
-| SLERP                                                                                            | ❌          | ✅              |
-| [Task Arithmetic](https://arxiv.org/abs/2212.04089)                                              | ✅          | ✅              |
-| [TIES](https://arxiv.org/abs/2306.01708)                                                         | ✅          | ✅              |
-| [DARE](https://arxiv.org/abs/2311.03099) [TIES](https://arxiv.org/abs/2306.01708)                | ✅          | ✅              |
-| [DARE](https://arxiv.org/abs/2311.03099) [Task Arithmetic](https://arxiv.org/abs/2212.04089)     | ✅          | ✅              |
-
-## 💫 Supported Evolutionary Algorithms
-
-A quick overview of the currently supported evolutionary algorithms from [pymoo](https://github.com/anyoptimization/pymoo):
-
-| Algorithm                                    | Class        | Objective(s) | Constraints | Description |
-|----------------------------------------------|--------------|--------------|-------------|-------------|
-| Genetic Algorithm (GA)                       | GA           | single       | x           | A modular implementation of a genetic algorithm. It can be easily customized with different evolutionary operators and applies to a broad category of problems. |
-| Differential Evolution (DE)                  | DE           | single       | x           | Different variants of differential evolution which is a well-known concept for in continuous optimization especially for global optimization. |
-| Biased Random Key Genetic Algorithm (BRKGA)  | BRKGA        | single       | x           | Mostly used for combinatorial optimization where instead of custom evolutionary operators the complexity is put into an advanced variable encoding. |
-| Nelder Mead                                  | NelderMead   | single       | x           | A point-by-point based algorithm which keeps track of a simplex which is either extended reflected or shrunk. |
-| Pattern Search                               | PatternSearch| single       | x           | Iterative approach where the search direction is estimated by forming a specific exploration pattern around the current best solution. |
-| CMAES                                        | CMAES        | single       |             | Well-known model-based algorithm sampling from a dynamically updated normal distribution in each iteration. |
-| Evolutionary Strategy (ES)                   | ES           | single       |             | The evolutionary strategy algorithm proposed for real-valued optimization problems. |
-| Stochastic Ranking Evolutionary Strategy (SRES) | SRES       | single       | x           | An evolutionary strategy with constrained handling using stochastic ranking. |
-| Improved Stochastic Ranking Evolutionary Strategy (ISRES) | ISRES | single | x | An improved version of SRES being able to deal dependent variables efficiently. |
-| NSGA-II                                      | NSGA2        | multi        | x           | Well-known multi-objective optimization algorithm based on non-dominated sorting and crowding. |
-| R-NSGA-II                                    | RNSGA2       | multi        | x           | An extension of NSGA-II where reference/aspiration points can be provided by the user. |
-| NSGA-III                                     | NSGA3        | many         | x           | An improvement of NSGA-II developed for multi-objective optimization problems with more than two objectives. |
-| U-NSGA-III                                   | UNSGA3       | many         | x           | A generalization of NSGA-III to be more efficient for single and bi-objective optimization problems. |
-| R-NSGA-III                                   | RNSGA3       | many         | x           | Allows defining aspiration points for NSGA-III to incorporate the user’s preference. |
-| MOEAD                                        | MOEAD        | many         |             | Another well-known multi-objective optimization algorithm based on decomposition. |
-| AGE-MOEA                                     | AGEMOEA      | many         |             | Similar to NSGA-II but estimates the shape of the Pareto-front to compute a score replacing the crowding distance. |
-| C-TAEA                                       | CTAEA        | many         | x           | An algorithm with a more sophisticated constraint-handling for many-objective optimization algorithms. |
-| SMS-EMOA                                     | CTAEA        | many         | x           | An algorithm that uses hypervolume during the environmental survival. |
-| RVEA                                         | RVEA         | many         | x           | A reference direction based algorithm used an angle-penalized metric. |
+> **Heads‑up:** some merge methods require *bfloat16* support. Make sure your CUDA / ROCm stack is recent enough.
 
 
 
----
-## 📚 Library Submodules Overview
+## ⚡ Quickstart
 
-The `src/mergenetic` codebase is organized into modular components that align with different stages of the model merging pipeline:
-
-- `merging/`: Merging logic using `mergekit` (e.g., `SlerpMerger`, `TiesDareMerger`)
-- `optimization/`: Problem definitions for `pymoo` (e.g., `CrossLingualMathProblem`)
-- `evaluation/`: Fitness function computation
-- `estimator/`: Performance evaluators (IRT-based, LM-Eval-Harness-based)
-- `searcher/`: Evolution loop orchestration (`Searcher`, logging, testing)
-- `utils/`: YAML configs, GPU utilities, loading, etc.
-
-For in depth explanation see `src/mergenetic/readme.md`
-
----
-## 🔦 TUTORIAL: Cross-Lingual Math Merging
-
-A **tutorial** can be found in the `notebooks/` folder. You will learn how:
-- Merge an **Italian LLM** with a **math-specialized model**
-- Use SLERP to interpolate their weights
-- Evaluate on an **Italian version of GSM8K**
-
-### Steps:
-1. ✅ Download models from Hugging Face
-2. 📄 Define a custom task YAML in `mergenetic/lm_tasks/`
-3. 🧪 Select evaluation anchors from the dataset
-4. 🔧 Configure merging with `ConfigLmEval`
-5. ⚙️ Define a `SlerpMerger`
-6. 🔍 Instantiate `CrossLingualMathProblem`
-7. 🧮 Use `pymoo.GA` as the search algorithm
-8. 🚀 Launch `Searcher().search()` and evaluate with `Searcher().test()`
+The fastest way to see Mergenetic in action is the Colab notebook here [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/tommasomncttn/mergenetic/blob/main/notebooks/Introduction_to_Mergenetic.ipynb)
 
 
----
 
-## 3️⃣ Mergenetic Usage: three approaches
+## 🔑 Key Concepts
 
-There are three main approach to use mergenetic:
-- Python API
-- Command Line Interface
-- Graphical User Interface
+### 1. Merging Strategies
 
-### 👨🏻‍💻 Python API Overview to use Mergenetic:
+| Strategy             | Multi‑model? | Needs base model? | Paper                                                |
+| -------------------- | ------------ | ----------------- | ---------------------------------------------------- |
+| Linear / Model Soups | ✅            | ❌                 | [arXiv:2203.05482](https://arxiv.org/abs/2203.05482) |
+| SLERP                | ❌            | ✅                 | –                                                    |
+| Task Arithmetic      | ✅            | ✅                 | [arXiv:2212.04089](https://arxiv.org/abs/2212.04089) |
+| TIES                 | ✅            | ✅                 | [arXiv:2306.01708](https://arxiv.org/abs/2306.01708) |
+| DARE                 | ✅            | ✅                 | [arXiv:2311.03099](https://arxiv.org/abs/2311.03099) |
+
+### 2. Evolutionary Algorithms
+
+Mergenetic wraps every single‑ and multi‑objective optimiser in **pymoo** – GA, DE, CMA‑ES, NSGA‑II/III and many more. Simply import the one you need:
+
+```python
+from pymoo.algorithms.soo.genetic_algorithm import GA
+algorithm = GA(pop_size=32)
+```
+
+### 3. Evaluation & Fitness
+
+- Native support for **LM‑Eval Harness** tasks
+- Low‑cost proxies: IRT estimators or random sampling
+- Bring‑your‑own metric by writing a single function
+
+
+
+## 🚀 Usage Examples
+
+### Python API
 
 ```python
 from mergenetic.searcher import Searcher
@@ -143,76 +102,66 @@ searcher.search()
 searcher.test()
 ```
 
-Here's a concise Markdown guide describing the **four usage types** of `mergenetic.py` based on the combination of:
+### Command‑Line Interface
 
-- **Evaluation method**: `lm-eval` (using LM-Eval Harness) vs `custom`
-- **Merge type**: `single` language vs `multi`lingual
+```bash
+python -m mergenetic.cli \
+  --merge-type single \
+  --eval-method lm-eval \
+  --models mistral-7b math-7b \
+  --task ita_gsm8k
+```
 
-Each command launches an interactive CLI that helps configure and optionally launch the experiment.
+An interactive wizard will guide you through the remaining options. See [`cli/README.md`](cli/README.md) for the full reference.
 
----
+### Graphical Interface
 
-### ⌨️ `mergenetic.py` CLI Usage Guide
+Run the Gradio dashboard locally:
 
-`mergenetic.py` supports 4 CLI modes combining `--eval-method` (lm-eval/custom) and `--merge-type` (single/multi):
-- 🔹 **Single + LM-Eval**: Run merging experiments with standard LM-Eval tasks/metrics.
-- 🔸 **Single + Custom**: Use your own dataset (e.g., CSV) for single-language evaluation.
-- 🌐 **Multi + LM-Eval**: Evaluate multilingual merges with LM-Eval Harness.
-- 🧩 **Multi + Custom**: Run multilingual merges with custom data per language.
+```bash
+cd gui
+pip install -r requirements.txt
+python3 gui.py
+```
 
-For additional details, check `cli/readme.me`
-
----
-
-### 📺 `mergenetic.py` CLI Usage Guide
-
-`mergenetic.py` supports 4 CLI modes combining `--eval-method` (lm-eval/custom) and `--merge-type` (single/multi):
-- 🔹 **Single + LM-Eval**: Run merging experiments with standard LM-Eval tasks/metrics.
-- 🔸 **Single + Custom**: Use your own dataset (e.g., CSV) for single-language evaluation.
-- 🌐 **Multi + LM-Eval**: Evaluate multilingual merges with LM-Eval Harness.
-- 🧩 **Multi + Custom**: Run multilingual merges with custom data per language.
-
-For additional details, check `cli/readme.me`
-
----
-
-### 🖥️ Mergenetic GUI — Functionality Overview
-
-The Gradio-based GUI allows users to **configure and launch merging experiments** in an interactive, user-friendly way. It covers the same 4 core scenarios as the CLI:
-
-| Merge Type       | Evaluation Method | GUI Equivalent? | Notes |
-|------------------|-------------------|------------------|-------|
-| Single Language  | `lm-eval`         | ✅ Yes            | Set "Evaluation Method" to `lm-eval` and "Merging Type" to `single`. |
-| Single Language  | `custom`          | ✅ Yes            | Select `custom` and provide a CSV dataset path. |
-| Multilingual     | `lm-eval`         | ✅ Yes            | Specify multiple languages and tasks using dropdowns. |
-| Multilingual     | `custom`          | ✅ Yes            | Provide separate dataset paths for each language. |
-
----
-
-## Tutorial 
-
-If you are looking for a brief introduction to the library you can watch our YouTube tutorial:
-
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=lazoVeP7ku8">
-    <img src="https://img.youtube.com/vi/lazoVeP7ku8/0.jpg" alt="Watch the video">
-  </a>
-</p>
+…and configure experiments with dropdowns – no code required! See [`gui/README.md`](gui/README.md) for the full details.
 
 
----
+## 🗂️ Project Layout
+
+```text
+mergenetic/
+├── merging/          # adapters around mergekit strategies
+├── optimization/     # pymoo problems for various tasks
+├── evaluation/       # LM‑Eval & custom fitness functions
+├── estimator/        # fast score predictors (IRT, sampling)
+├── searcher/         # evolutionary loop orchestration
+└── utils/            # config, logging, GPU helpers, …
+```
+
+*Detailed docs for each module live in* [`src/mergenetic/README.md`](src/mergenetic/README.md).
+
+
 ## 📒 Learn More
-- [mergekit](https://github.com/arcee-ai/mergekit)
-- [pymoo](https://github.com/anyoptimization/pymoo)
-- [lm-eval-harness](https://github.com/EleutherAI/lm-evaluation-harness)
 
----
+- 📓 *Tutorial notebook:* `notebooks/Cross_Lingual_Math_Merging.ipynb`
+- 🎞️ *Video walk‑through:* [YouTube (5 min)](https://www.youtube.com/watch?v=lazoVeP7ku8)
+- 🔗 Related repos: [mergekit] · [pymoo] · [lm‑eval‑harness]
+
+
+
+## 🤝 Contributing
+
+Bug reports, feature requests and pull requests are very welcome! Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) before you start.
+
+
 
 ## 🧠 Citation
-TBA – Coming soon.
 
----
+> *Citation info coming soon – stay tuned!*
 
-## 🥵 Feedback & Contributions
-This project is part of the **Merge3** initiative. Feedback, suggestions, and contributions are welcome!
 
+
+## 📄 License
+
+Licensed under the **Apache 2.0** licence – see the [LICENSE](LICENSE) file for details.
