@@ -96,4 +96,3 @@ xxhash==3.4.1
 yarl==1.9.4
 lm_eval @ git+https://github.com/EleutherAI/lm-evaluation-harness.git
 rich
-ipykernel==6.17.1
