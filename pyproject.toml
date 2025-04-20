@@ -42,7 +42,6 @@ dependencies = [
   "huggingface-hub==0.24.5",
   "idna==3.7",
   "immutables==0.21",
-  "ipykernel>=6.29.5",
   "jinja2==3.1.4",
   "joblib==1.4.2",
   "kiwisolver==1.4.5",
@@ -107,7 +106,6 @@ dependencies = [
   "xxhash==3.4.1",
   "yarl==1.9.4",
   "lm_eval @ git+https://github.com/EleutherAI/lm-evaluation-harness.git",
-  "ipywidgets>=8.1.6",
   "rich",
 ]
 
