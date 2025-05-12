@@ -11,9 +11,8 @@ from mergenetic.evaluation import BaseEvaluator, FGMathEvaluator, MCEvaluator
 from mergenetic.evaluation.perf_estimation import estimate_theta_anchors
 from mergenetic.evaluation.lm_harness import LmHarnessEvaluator
 
-from lm_eval.models.huggingface import HFLM
+from lm_eval.models.vllm_causallms import VLLM
 
-import logging
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -184,7 +183,7 @@ def evaluate_models_lm_harness(config: ConfigLmEval):
         logger.info(f"Evaluation for {lang} not found at path {output_path}. Starting evaluation.")
         
         model_path = config.models[lang]
-        model = HFLM(pretrained=str(model_path), device=config.device)
+        model = VLLM(pretrained=str(model_path), device=config.device)
 
         evaluator = LmHarnessEvaluator(
                     task_name=task,
@@ -209,7 +208,7 @@ def evaluate_models_lm_harness(config: ConfigLmEval):
             return evaluations
 
         logger.info(f"Evaluation for the base model not found at path {out_path}. Starting evaluation.")
-        base_model = HFLM(pretrained=str(config.base_model), device=config.device)
+        base_model = VLLM(pretrained=str(config.base_model), device=config.device)
         evaluator = LmHarnessEvaluator(
                     task_name=tasks["base"],
                     sample_ids=None,

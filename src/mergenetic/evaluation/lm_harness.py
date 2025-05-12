@@ -1,7 +1,7 @@
 from lm_eval.tasks import TaskManager
 from lm_eval.api.task import ConfigurableTask
 from lm_eval.evaluator import simple_evaluate
-from lm_eval.models.huggingface import HFLM
+from lm_eval.models.vllm_causallms import VLLM
 
 import numpy as np
 import pandas as pd
@@ -83,13 +83,13 @@ class LmHarnessEvaluator:
         """
         return self.task_manager.load_task_or_group(task_name)[task_name]
 
-    def evaluate(self, model: HFLM) -> list[float]:
+    def evaluate(self, model: VLLM) -> list[float]:
         """
         Evaluates the performance of the model on the specified task.
 
         Parameters
         ----------
-        model : HFLM
+        model : VLLM
             The model to evaluate.
 
         Returns

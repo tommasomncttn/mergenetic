@@ -180,3 +180,4 @@ model/**
 .gradio
 
 *.egg-info/
+**/lid.176.bin

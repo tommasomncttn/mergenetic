@@ -1,12 +1,13 @@
 additional_templates_folder: lm_tasks
 base_model: OpenLLM-Ro/RoMistral-7b-Instruct
+bench: gsm8k
 device: cuda:0
 dtype: bfloat16
 eval_batch_size: 8
 langs:
 - task0
 metric: exact_match
-mode: mean
+mode: gmpirt
 models:
   task0: meta-math/MetaMath-Mistral-7B
 n_iter: 10

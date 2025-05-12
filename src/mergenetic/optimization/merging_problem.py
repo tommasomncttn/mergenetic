@@ -1,4 +1,4 @@
-from lm_eval.models.huggingface import HFLM 
+from lm_eval.models.vllm_causallms import VLLM 
 from pymoo.core.problem import Problem
 from transformers import (
     AutoModelForCausalLM, 
@@ -34,7 +34,7 @@ class BaseMergingProblem(ABC, Problem):
                  discrete: bool = False,
                  device: str = "cuda",
                  load_in_4bit: bool = True,
-                 use_lm_eval: bool = False,  # Flag for using lm-eval-harness (HFLM)
+                 use_lm_eval: bool = False,  # Flag for using lm-eval-harness (VLLM)
                  verbose_evaluation: bool = True,
                  test_mode: bool = False,
                  custom_prompt_template=False
@@ -47,7 +47,7 @@ class BaseMergingProblem(ABC, Problem):
         self.eval_batch_size = eval_batch_size
         self.device = device
         self.load_in_4bit = load_in_4bit
-        self.use_lm_eval = use_lm_eval  # Enables HFLM
+        self.use_lm_eval = use_lm_eval  # Enables VLLM
         self.verbose_evaluation = verbose_evaluation
         self.test_mode = test_mode
         self.custom_prompt_template = custom_prompt_template or False
@@ -83,8 +83,8 @@ class BaseMergingProblem(ABC, Problem):
         path_to_config = self.merger.create_individual_configuration(x)
         return self.merger.merge_model_from_configuration(path_to_config, cuda=self.device is not None and "cuda" in self.device)
 
-    def load_model(self, path: str, verbose: bool = True) -> HFLM | tuple[AutoModelForCausalLM, AutoTokenizer]:
-        """Loads a model and tokenizer using either Hugging Face or HFLM."""
+    def load_model(self, path: str, verbose: bool = True) -> VLLM | tuple[AutoModelForCausalLM, AutoTokenizer]:
+        """Loads a model and tokenizer using either Hugging Face or VLLM."""
         logger.info(f"Loading model from: {path}")
         logger.info(f"On device: {self.device}. Load in 4bit: {self.load_in_4bit}")
 
@@ -108,7 +108,7 @@ class BaseMergingProblem(ABC, Problem):
             model = AutoModelForCausalLM.from_pretrained(path, device_map=device)
 
         if self.use_lm_eval:
-            return HFLM(pretrained=model, device=device)
+            return VLLM(pretrained=model, device=device)
 
         model.config.use_cache = True
         model.eval()
@@ -144,7 +144,7 @@ class BaseMergingProblem(ABC, Problem):
         if self.use_lm_eval:
             f, description = self.metrics_4_genotype(model)
         else:
-            model, tokenizer = model  # Unpack if not using HFLM
+            model, tokenizer = model  # Unpack if not using VLLM
             f, description = self.metrics_4_genotype(model, tokenizer)
 
         logger.info(f"Model evaluation results: {f}")
