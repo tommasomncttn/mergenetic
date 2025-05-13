@@ -53,6 +53,33 @@ class ConfigLmEval(Config):
     additional_templates_folder: Optional[str] = None
     load_in_4bit: bool = True
 
+@dataclass
+class ConfigMultiObjective:
+    """
+    **Only for LM-EVAL.**
+    A class required to run the evolve search in a generic multi-objective setting.
+    It allows to set the parameters for the evolution and evaluation with lm-eval-harness.
+    """
+    # Required parameters
+    run_id: str = None
+    n_iter: int = None
+    pop_size: int = None
+    metric: Optional[Any] = None
+    models: List[str] = None
+    path_to_store_config: str = None
+    path_to_store_merged_model: str = None
+    additional_templates_folder: Optional[str] = None
+    tasks: List[str] = None
+
+    # Optional parameters
+    seed: int = 420
+    n_samples: int = 20
+    dtype: str = "bfloat16"
+    eval_batch_size: int = 32
+    device: Optional[str] = "cuda"
+    base_model: Optional[Any] = None
+    force_evaluation: bool = False
+    load_in_4bit: bool = True
 
 
 ############################################################################################################

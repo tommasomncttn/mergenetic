@@ -390,3 +390,127 @@ class MultilingualMergingProblem(MultiObjectiveMergingProblem):
         else:
             return self.metrics_4_genotype(model, tokenizer)
     
+# ===============================
+#  LM-EVAL MULTIOBJECTIVE PROBLEM
+# ===============================
+@dataclass
+class ConfigLmEvalMultiObjectivePE:
+    tasks: list[str]
+    correct_metric: str
+    sample_ids: dict[str, list[int]]
+    additional_templates_folder: str | None = None
+
+    def __post_init__(self):
+        if not isinstance(self.tasks, list):
+            raise ValueError("Tasks should be a list of task names.")
+        if not isinstance(self.sample_ids, dict):
+            raise ValueError("Sample IDs should be a dictionary of lists of integers.")
+        if not isinstance(self.correct_metric, str):
+            raise ValueError("Correctness metric should be a string.")
+        if not isinstance(self.additional_templates_folder, (str, type(None))):
+            raise ValueError("Additional templates folder should be a string or None.")
+
+class LmEvalMultiObjectiveProblem(MultiObjectiveMergingProblem):
+    """
+    Class for evolving merged models.
+    """
+
+    def __init__(self, config: ConfigLmEvalMultiObjectivePE,
+                 merger,
+                 n_var: int = 11,
+                 n_obj: int = 2,
+                 n_eq_constr: int = 0,
+                 n_ieq_constr: int = 0,
+                 xl = 0,
+                 xu = 1,
+                 **kwargs
+                 ):
+        super().__init__(
+            merger=merger,
+            n_var=n_var,
+            n_obj=n_obj,
+            n_eq_constr=n_eq_constr,
+            n_ieq_constr=n_ieq_constr,
+            xl=xl,
+            xu=xu,
+            search_dataframes=None,
+            test_dataframes=None,
+            use_lm_eval=True,
+            **kwargs
+        )
+            
+        self.config = config
+
+    def metrics_4_genotype(self, model) -> Union[list[float], str]:
+        """
+        Method to evaluate the performance of the merged model/genotype.
+
+        Parameters
+        ----------
+        model : Model
+            The model to evaluate.
+        Returns
+        -------
+        Union[list[float], str]
+            A list of metrics that will be used to evaluate the performance of the merged model in out["F"]        
+        """
+
+        correctness_dict = {}
+        for task in self.config.tasks:
+            evaluator = LmHarnessEvaluator(
+                task_name=task,
+                sample_ids=self.config.sample_ids[task],
+                correctness_metric=self.config.correct_metric,
+                is_test=self.test_mode,
+                additional_templates_folder=self.config.additional_templates_folder,
+                batch_size=self.eval_batch_size
+            )
+            correctness_dict[task] = evaluator.evaluate(model)
+
+        # get metrics
+        acc_dict = {}
+        for k, correctness in correctness_dict.items():
+            est_params = PerformanceEstimationParameters(
+                thetas=None,
+                sample_weights=np.ones(len(self.config.sample_ids[k])) / len(self.config.sample_ids[k]),
+                sample_ids=self.config.sample_ids[k],
+                mode="mean",
+                bench=None
+            )
+            perf_estimator = PerformanceEstimator(est_params)
+
+            logger.info(f"Correctness for {k}: {correctness}")                
+            acc_dict[k] = perf_estimator.estimate_accuracy(correctness)
+        
+        f = [-1 * acc for acc in acc_dict.values()]
+        description = "Fitness values: " + str(acc_dict)
+        
+        if not f:
+            raise ValueError("No metrics were computed.")
+        
+        return f, description
+
+    def test(self, genotype, base_model: Optional[Path] = None) -> Union[list[float], str]:
+        """
+        Evaluate a model's performance on a test dataset.
+        Parameters
+        ----------
+        genotype : list
+            The genotype to evaluate.
+        base_model : Path, optional
+            The path to the base model to use for evaluation.
+        Returns
+        -------
+        Union[list[float], str]
+            The metrics for the model.
+        """
+        self.test_mode = True
+        if base_model:
+            model = self.load_model(base_model)
+        else:
+            assert len(genotype) == self.n_var, f"Genotype length mismatch: expected {self.n_var}, got {len(genotype)}."
+            path_to_model = self._from_array_to_genotype(genotype)
+
+        model = self.load_model(path_to_model)
+        
+        return self.metrics_4_genotype(model)

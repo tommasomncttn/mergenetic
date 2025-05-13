@@ -1,0 +1,1 @@
+python3 experiments/evolutionary-merging-lm-harness/end2end_multiobjective.py --config experiments/evolutionary-merging-lm-harness/multiobjective/multiobjective.yaml

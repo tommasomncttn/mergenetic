@@ -182,6 +182,8 @@ experiments/models/**
 
 **.csv
 **.pkl
+**/**gmpirt
+**/config.yaml
 
 *.egg-info/
 **/lid.176.bin

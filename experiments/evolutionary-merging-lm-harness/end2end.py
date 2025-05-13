@@ -145,7 +145,6 @@ def main(config: ConfigLmEval):
     searcher.test()
 
     logger.info("Search completed. Results saved to %s", results_path)
-    torch.distributed.destroy_process_group()
 
 
 if __name__ == "__main__":

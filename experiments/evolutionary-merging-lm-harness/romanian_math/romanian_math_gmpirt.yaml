@@ -1,9 +1,9 @@
 # Required parameters
-pop_size: 1  # int
-n_iter:   1   # int
+pop_size: 7  # int
+n_iter:   5   # int
 models:                            # List[str]
-  ro: "meta-math/MetaMath-Mistral-7B"
-base_model: "OpenLLM-Ro/RoMistral-7b-Instruct"
+  ro: "OpenLLM-Ro/RoMistral-7b-Instruct"
+base_model: "meta-math/MetaMath-Mistral-7B"
 path_to_store_merged_model: "experiments/models/merged/"  # str
 path_to_store_config: "experiments/evolutionary-merging-lm-harness/"          # str
 dtype: "float16"                                  # str
@@ -26,3 +26,4 @@ n_samples: 10
 task_type: "FG_MATH"
 eval_batch_size: 64                             # int, default=8
 additional_templates_folder: "lm_tasks"
+load_in_4bit: False

@@ -1,0 +1,33 @@
+# Required parameters
+run_id: "multiobjective"                               # str
+n_iter:   1   # int
+pop_size: 1  # int
+
+metric: "acc"
+models: 
+- "DeepMount00/Mistral-Ita-7b"
+- "BramVanroy/GEITje-7B-ultra"
+- "LeoLM/leo-mistral-hessianai-7b"
+- "mistralai/Mistral-7B-v0.1"
+
+base_model: "mistralai/Mistral-7B-v0.1"
+
+path_to_store_merged_model: "experiments/models/merged/"  # str
+path_to_store_config: "experiments/evolutionary-merging-lm-harness/"          # str
+additional_templates_folder: "lm_tasks"  # str
+
+tasks:
+- "arc_it"
+- "arc_nl"
+- "arc_de"
+- "arc_en"
+
+seed: 420                                         # int
+n_samples: 20
+dtype: "float16"                                  # str
+
+# Optional parameters
+device: "cuda:2"  # str | None
+
+eval_batch_size: 64                             # int, default=8
+load_in_4bit: True
