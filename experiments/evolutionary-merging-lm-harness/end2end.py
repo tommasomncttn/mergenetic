@@ -24,6 +24,7 @@ from lm_eval.api.task import ConfigurableTask
 
 import os
 import sys
+import torch
 
 # Set up logging, instead of sending logs to stderr, use stdout
 # and set the format to include the timestamp, level, and message
@@ -120,7 +121,7 @@ def main(config: ConfigLmEval):
                                     n_eq_constr=0,
                                     n_ieq_constr=0,
                                     discrete=True,
-                                    load_in_4bit=True,
+                                    load_in_4bit=config.load_in_4bit,
                                     eval_batch_size=config.eval_batch_size,
                                     additional_templates_folder=config.additional_templates_folder,
                                     )
@@ -144,6 +145,7 @@ def main(config: ConfigLmEval):
     searcher.test()
 
     logger.info("Search completed. Results saved to %s", results_path)
+    torch.distributed.destroy_process_group()
 
 
 if __name__ == "__main__":

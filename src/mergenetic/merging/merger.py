@@ -53,7 +53,7 @@ class Merger(ABC):
         super().__init__()
 
         # storing all the paths
-        self.path_to_store_yaml = Path(path_to_store_yaml) / run_id / "config.yaml"
+        self.path_to_store_yaml = Path(path_to_store_yaml) / "config.yaml"
         self.path_to_store_merged_model = Path(path_to_store_merged_model) / run_id
 
         # storing the data type

@@ -95,20 +95,20 @@ class BaseMergingProblem(ABC, Problem):
             raise RuntimeError("CUDA is not available, but GPU loading was requested.")
 
         model: AutoModelForCausalLM = None
-        
-        if self.load_in_4bit:
-            quant_config = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_quant_type="nf4",
-                bnb_4bit_use_double_quant=True,
-                bnb_4bit_compute_dtype=torch.float16
-            )
-            model = AutoModelForCausalLM.from_pretrained(path, device_map=device, quantization_config=quant_config)
-        else:
-            model = AutoModelForCausalLM.from_pretrained(path, device_map=device)
 
         if self.use_lm_eval:
-            return VLLM(pretrained=model, device=device)
+            return VLLM(pretrained=str(path), device=device, dtype=torch.bfloat16, quantization="bitsandbytes" if self.load_in_4bit else None, gpu_memory_utilization=0.8 if self.load_in_4bit else 0.9)
+        else:
+            if self.load_in_4bit:
+                quant_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_quant_type="nf4",
+                    bnb_4bit_use_double_quant=True,
+                    bnb_4bit_compute_dtype=torch.float16
+                )
+                model = AutoModelForCausalLM.from_pretrained(path, device_map=device, quantization_config=quant_config)
+            else:
+                model = AutoModelForCausalLM.from_pretrained(path, device_map=device)
 
         model.config.use_cache = True
         model.eval()
@@ -190,7 +190,16 @@ class MergingProblem(BaseMergingProblem):
 
 class MultiObjectiveMergingProblem(BaseMergingProblem):
     """
-    Implementation of a **multi-objective** merging problem.
+    Implementation of a multi-objective optimization problem for model merging.
+
+    This class extends BaseMergingProblem to handle multiple competing objectives
+    simultaneously (e.g., optimizing for both accuracy and efficiency). Unlike 
+    single-objective optimization, this creates a Pareto front of solutions 
+    representing different trade-offs between objectives.
+
+    Each objective requires its own evaluation dataset and metrics. Results are 
+    tracked separately for each objective, allowing for comprehensive analysis
+    of the optimization landscape and trade-offs between competing goals.
     """
 
     def __init__(self, merger, n_obj: int, search_dataframes: Dict[str, pd.DataFrame]|None, 

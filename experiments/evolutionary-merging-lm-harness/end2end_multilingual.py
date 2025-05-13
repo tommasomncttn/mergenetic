@@ -3,6 +3,7 @@ from pymoo.algorithms.moo.nsga2 import NSGA2
 
 import numpy as np
 import argparse
+import torch
 import yaml
 import sys
 
@@ -116,7 +117,7 @@ def main(config: ConfigLmEval):
                                     eval_batch_size=config.eval_batch_size,
                                     device=device,
                                     detect_lang=False,
-                                    load_in_4bit=True,
+                                    load_in_4bit=config.load_in_4bit,
                                     additional_templates_folder=config.additional_templates_folder,
                                     )
     
@@ -135,6 +136,7 @@ def main(config: ConfigLmEval):
     searcher.test()
 
     logger.info("Search completed. Results saved to %s", results_path)
+    torch.distributed.destroy_process_group()
 
 if __name__ == "__main__":
     # parse the arguments

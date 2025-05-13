@@ -12,6 +12,7 @@ from mergenetic.evaluation.perf_estimation import estimate_theta_anchors
 from mergenetic.evaluation.lm_harness import LmHarnessEvaluator
 
 from lm_eval.models.vllm_causallms import VLLM
+import torch
 
 from logging import getLogger
 
@@ -183,15 +184,16 @@ def evaluate_models_lm_harness(config: ConfigLmEval):
         logger.info(f"Evaluation for {lang} not found at path {output_path}. Starting evaluation.")
         
         model_path = config.models[lang]
-        model = VLLM(pretrained=str(model_path), device=config.device)
+        model = VLLM(pretrained=str(model_path), device=config.device, dtype=torch.bfloat16, quantization="bitsandbytes" if config.load_in_4bit else None, gpu_memory_utilization=0.8 if config.load_in_4bit else 0.9)
 
         evaluator = LmHarnessEvaluator(
                     task_name=task,
                     sample_ids=None,
                     correctness_metric=config.metric,
-                    lang_id=lang,
+                    lang_id=None,
                     is_test=False,
                     additional_templates_folder=config.additional_templates_folder,
+                    batch_size=config.eval_batch_size,
                 )
         evaluator.evaluate(model)
         evaluations[lang] = evaluator.get_data()
@@ -208,7 +210,7 @@ def evaluate_models_lm_harness(config: ConfigLmEval):
             return evaluations
 
         logger.info(f"Evaluation for the base model not found at path {out_path}. Starting evaluation.")
-        base_model = VLLM(pretrained=str(config.base_model), device=config.device)
+        base_model = VLLM(pretrained=str(config.base_model), device=config.device, quantization="bitsandbytes" if load_in_4bit else None, gpu_memory_utilization=0.8 if load_in_4bit else 0.9)
         evaluator = LmHarnessEvaluator(
                     task_name=tasks["base"],
                     sample_ids=None,
@@ -216,6 +218,7 @@ def evaluate_models_lm_harness(config: ConfigLmEval):
                     lang_id=None,
                     is_test=True,
                     additional_templates_folder=config.additional_templates_folder,
+                    batch_size=config.eval_batch_size,
                 )
         evaluator.evaluate(base_model)
         evaluations["base"] = evaluator.get_data()

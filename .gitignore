@@ -176,8 +176,12 @@ cython_debug/
 __pycache__
 notebooks/model/
 model/**
+experiments/models/**
 **/model/**
 .gradio
+
+**.csv
+**.pkl
 
 *.egg-info/
 **/lid.176.bin

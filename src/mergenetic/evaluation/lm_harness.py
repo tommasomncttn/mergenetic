@@ -31,7 +31,8 @@ class LmHarnessEvaluator:
                  sample_ids: list[int] | None = None,
                  lang_id: str | None = None,
                  is_test: bool = False,
-                 additional_templates_folder: str | None = None
+                 additional_templates_folder: str | None = None,
+                 batch_size: int = 32,
                  ) -> None:
         
         self.task_manager = TaskManager(include_path=additional_templates_folder)
@@ -66,6 +67,7 @@ class LmHarnessEvaluator:
         self.correctness_metric = correctness_metric
         self.task_nm = task_name
         self.lang_id = lang_id
+        self.batch_size = batch_size
 
     def get_task(self, task_name: str) -> ConfigurableTask:
         """
@@ -97,7 +99,7 @@ class LmHarnessEvaluator:
         dict
             Evaluation results.
         """
-        results = simple_evaluate(model, tasks=[self.task])
+        results = simple_evaluate(model, tasks=[self.task], batch_size=self.batch_size)
 
         def get_responses(results):
             answers = []
@@ -133,11 +135,12 @@ class LmHarnessEvaluator:
             logger.info(f"Language detection is disabled. Fitness: {self.data['correctness'].mean()}")
             return self.data["correctness"]
         else:
+            print(self.data["model_answers"][0])
             if isinstance(self.data["model_answers"][0], str):
-                self.data["language"] = self.data["model_answers"].apply(lambda x: self.lang_detector._get_language(x[0]))
+                self.data["language"] = self.data["model_answers"].apply(lambda x: self.lang_detector._get_language(x[0] if not isinstance(x, str) else x))
                 self.data["is_language_correct"] = self.data["language"] == ("__label__" + self.lang_id)
             else:
-                self.data["language"] = self.data["model_answers"].apply(lambda x: [self.lang_detector._get_language(y[0]) for y in x])
+                self.data["language"] = self.data["model_answers"].apply(lambda x: [self.lang_detector._get_language( y[0] if not isinstance(y, str) else y ) for y in x])
                 self.data["is_language_correct"] = self.data["language"].apply(lambda x: avg_lang_correctness(self.lang_id, x))
 
             logger.info(f"Language detection is enabled. Fitness: {(self.data['is_language_correct'] * self.data['correctness']).mean()}")

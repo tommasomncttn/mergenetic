@@ -10,7 +10,7 @@ bitsandbytes==0.45.4
 einops==0.7.0
 pandas==2.2.2
 pymoo
-fasttext
+fasttext-numpy2
 plotly
 scikit-learn
 git-python

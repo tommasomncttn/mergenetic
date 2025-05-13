@@ -5,6 +5,7 @@ from mergenetic.evaluation.lm_harness import LmHarnessEvaluator
 from mergenetic.evaluation.math_language import FGMathEvaluator
 from mergenetic.utils import get_batched_model_predictions
 
+import numpy as np
 import pandas as pd
 from pathlib import Path
 from dataclasses import dataclass, field
@@ -137,7 +138,8 @@ class CrossLingualMathProblem(MergingProblem):
                 correctness_metric=self.conf_pe.correct_metric,
                 lang_id=self.lang_id if self.detect_lang else None,
                 is_test=self.test_mode,
-                additional_templates_folder=self.additional_templates_folder
+                additional_templates_folder=self.additional_templates_folder,
+                batch_size=self.eval_batch_size
             )
             correctness = evaluator.evaluate(model)
         
@@ -323,7 +325,8 @@ class MultilingualMergingProblem(MultiObjectiveMergingProblem):
                     correctness_metric=self.conf_pe.correct_metric,
                     lang_id=lang if self.detect_lang else None,
                     is_test=self.test_mode,
-                    additional_templates_folder=self.additional_templates_folder
+                    additional_templates_folder=self.additional_templates_folder,
+                    batch_size=self.eval_batch_size
                 )
                 correctness_dict[lang] = evaluator.evaluate(model)
         

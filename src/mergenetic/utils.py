@@ -51,6 +51,8 @@ class ConfigLmEval(Config):
     metric: Optional[Any] = None
     tasks: Dict[str, Dict[str, Dict[str, str]]] = None
     additional_templates_folder: Optional[str] = None
+    load_in_4bit: bool = True
+
 
 
 ############################################################################################################
