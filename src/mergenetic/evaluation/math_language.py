@@ -22,12 +22,17 @@ def extract_numbers(sentence: str, only_last_number: bool = True) -> Optional[Un
     str | list | None
         Extracted number(s) or None if no numbers found.
     """
-    if only_last_number:
-        match = re.search(r'(\d+\.\d+|\d+)(?!\w)', sentence)
-        return match.group() if match else None
+    # Use a robust regex to find all sequences of digits, possibly with a decimal point,
+    # ensuring they are whole numbers/decimals (bounded by word boundaries).
+    all_numbers = re.findall(r'\b\d+(?:\.\d+)?\b', sentence)
 
-    numbers = re.findall(r'\b\d+\.\d+|\b\d+', sentence)
-    return numbers if numbers else None
+    if not all_numbers:
+        return None
+
+    if only_last_number:
+        return all_numbers[-1]
+    else:
+        return all_numbers
 
 # ==================================
 #  MULTIPLE CHOICE EVALUATOR
@@ -38,7 +43,7 @@ class MCEvaluator(BaseEvaluator):
     Evaluates the capabilities of an LLM for Multiple Choice questions in a specified language.
     """
 
-    lang_detector: LanguageDetector
+    lang_detector: Optional[LanguageDetector] 
 
     def __init__(self, language_id: str | None = "it") -> None:
         """
@@ -48,7 +53,8 @@ class MCEvaluator(BaseEvaluator):
             Target language ID (default: "it" for Italian).
         """
 
-        self.language_id = language_id 
+        self.language_id = language_id
+        self.lang_detector = None 
 
         if self.language_id:
             try:
@@ -74,17 +80,17 @@ class MCEvaluator(BaseEvaluator):
         self._validate_dataframe(dataframe)
         self.data = dataframe.copy()
 
-        if self.language_id is None:
+        if not self.lang_detector: # Check if lang_detector is available
             self.data = self.data.assign(
                 filtered_answer=self.data["predictions"].apply(extract_numbers),
             )
-
             self.data["correctness"] = self.data["filtered_answer"] == self.data["answer"].astype(str)
             return self.data["correctness"]
-
         else:
+            # Use list comprehension for language detection to avoid potential apply issues with mocks
+            langs = [self.lang_detector._get_language(p) for p in self.data["predictions"]]
             self.data = self.data.assign(
-                language=self.data["predictions"].apply(self.lang_detector._get_language),
+                language=pd.Series(langs, index=self.data.index),
                 filtered_answer=self.data["predictions"].apply(extract_numbers),
             )
             self.data = self.data.assign(
@@ -92,9 +98,7 @@ class MCEvaluator(BaseEvaluator):
                                                (df["language"] == "UNK"),
                 is_answer_correct=lambda df: df["filtered_answer"] == df["answer"].astype(str)
             )
-
             self.data["correctness"] = self.data["is_language_correct"] & self.data["is_answer_correct"]
-
             return self.data["correctness"]
 
     def get_data(self) -> pd.DataFrame:
@@ -118,7 +122,7 @@ class FGMathEvaluator(BaseEvaluator):
     Evaluates the capabilities of an LLM in solving math word problems in a specified language.
     """
 
-    lang_detector: LanguageDetector
+    lang_detector: Optional[LanguageDetector] # Allow Optional for consistency
 
     def __init__(self, language_id: str | None = None) -> None:
         """
@@ -129,9 +133,15 @@ class FGMathEvaluator(BaseEvaluator):
         """
         
         self.language_id = language_id
+        self.lang_detector = None # Initialize to None
 
-        if language_id:
-            self.lang_detector = LanguageDetector([language_id])
+        if self.language_id: # Use self.language_id here
+            try:
+                self.lang_detector = LanguageDetector([self.language_id])
+            except Exception as e:
+                logger.warning(f"Language detection for FGMathEvaluator disabled: {e}")
+                self.lang_detector = None
+
 
     @staticmethod
     def _extract_answer(text: str) -> str:
@@ -172,20 +182,22 @@ class FGMathEvaluator(BaseEvaluator):
         self.data["predictions_filtered"] = self.data["predictions"].apply(self._extract_answer)
         self.data["correctness"] = self.data["predictions_filtered"] == self.data["answer"].astype(str)
 
-        if self.language_id:
-            self.data["language"] = self.data["predictions"].apply(self.lang_detector._get_language)
+        if self.lang_detector: # Check if lang_detector is available
+            # Use list comprehension for language detection
+            langs = [self.lang_detector._get_language(p) for p in self.data["predictions"]]
+            self.data["language"] = pd.Series(langs, index=self.data.index)
+            
             self.data["evaluation_log"] = self.data.apply(
                 lambda row: f"Predicted: {row.predictions_filtered}, Actual: {row.answer}, Correct: {row.correctness}\nFull Answer: {row.predictions}, Language: {row.language}", axis
                 =1)
+            
+            # Combine correctness with language correctness
+            lang_correct = (self.data["language"] == f"__label__{self.language_id}") | (self.data["language"] == "UNK")
+            return self.data["correctness"] & lang_correct
         else:
             self.data["evaluation_log"] = self.data.apply(
                 lambda row: f"Predicted: {row.predictions_filtered}, Actual: {row.answer}, Correct: {row.correctness}\nFull Answer: {row.predictions}", axis=1)
-
-        if not self.language_id:
             return self.data["correctness"]
-        else:
-            return self.data["correctness"] & ((self.data["language"] == f"__label__{self.language_id}") | 
-                                              (self.data["language"] == "UNK"))
     
     def get_data(self) -> pd.DataFrame:
         """

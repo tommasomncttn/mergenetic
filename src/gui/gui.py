@@ -5,7 +5,7 @@ from pathlib import Path
 import logging
 
 # Import utility functions from gui_utils.py
-from gui_utils import (
+from gui.gui_utils import (
     get_component_value, create_config_directory, list_configurations, 
     load_configuration, run_experiment, get_lm_eval_tasks, 
     stop_experiment, PROJECT_ROOT
@@ -829,7 +829,7 @@ def create_interface():
                 )
         
         # Function to update visibility of components based on selections
-        def update_visibility(eval_method_val, merge_type_val, n_langs_val=2):
+        def update_visibility(eval_method_val, merge_type_val, eval_mode_val, n_langs_val=2):
             is_lm_eval = True  # Always lm-eval
             is_multi = merge_type_val == "multi"
             
@@ -886,14 +886,14 @@ def create_interface():
         
         # Function to update benchmark type visibility and choices based on evaluation mode
         def update_benchmark_visibility(mode_val):
-            is_mean = mode_val == "mean"
-            
-            if is_mean:
+            # update task inputs to only have allowed benchmarks if not in mean mode
+                
+            if mode_val == "mean":
                 # For mean mode: disable the dropdown, set empty value, and include empty string option
                 return gr.update(
                     interactive=False, 
                     value="",
-                    choices=[""] + allowed_benchmarks  # Include empty string as first option
+                    choices=[""]  # Include empty string as first option
                 )
             else:
                 # For non-mean modes: enable dropdown, keep gsm8k as default value
@@ -1147,6 +1147,8 @@ def create_interface():
         def refresh_lm_tasks():
             """Refresh the list of LM-eval tasks."""
             fresh_tasks = get_lm_eval_tasks()
+            if mode != "mean":
+                fresh_tasks = [task for task in fresh_tasks if task in allowed_benchmarks]
             # Update both the single task dropdown and all multilingual task dropdowns
             updates = [gr.Dropdown.update(choices=fresh_tasks)]
             for _ in range(5):  # For all language task dropdowns

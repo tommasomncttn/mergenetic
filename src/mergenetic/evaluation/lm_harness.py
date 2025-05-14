@@ -115,7 +115,7 @@ class LmHarnessEvaluator:
                     else:
                         answers.append({"id": sample['doc_id'],
                                         "correctness": sample[self.correctness_metric],
-                                        "model_answers": sample['resps']}[0])
+                                        "model_answers": sample['resps'][0]})
                 else:
                     answers.append({"id": sample['doc_id'],
                                     "correctness": sample[self.correctness_metric],
@@ -124,18 +124,21 @@ class LmHarnessEvaluator:
         
         self.data = pd.DataFrame(get_responses(results))
 
+        # let's filter the answers by sample_ids
+        self.data = self.data[self.data['id'].isin(self.sample_ids)] if self.sample_ids is not None else self.data
+
         # if the number of answers is more than len(sample_ids), then we need to filter the answers
         # by randomly picking one with the same id
+
         if self.sample_ids is not None and len(self.data) > len(self.sample_ids):
-            self.data = self.data.groupby('id').apply(lambda x: x.sample(1)).reset_index(drop=True)
+            self.data = self.data.groupby('id').sample(n=1).reset_index(drop=True)
 
-        #logger.info(f"Answers: {self.data}")
-
+        logger.info(f"Samples from model answers: {self.data['model_answers'].head(5)}")
+        
         if self.lang_detector is None:
             logger.info(f"Language detection is disabled. Fitness: {self.data['correctness'].mean()}")
             return self.data["correctness"]
         else:
-            print(self.data["model_answers"][0])
             if isinstance(self.data["model_answers"][0], str):
                 self.data["language"] = self.data["model_answers"].apply(lambda x: self.lang_detector._get_language(x[0] if not isinstance(x, str) else x))
                 self.data["is_language_correct"] = self.data["language"] == ("__label__" + self.lang_id)
@@ -169,6 +172,8 @@ def avg_lang_correctness(lang_id:str, langs: list[str]) -> float:
     Returns
     -------
     float
-        Average correctness of the language detection.
+        Average correctness of the language detection. Returns np.nan if langs is empty.
     """
+    if not langs:  # Check if the list is empty
+        return np.nan # Return NaN directly to avoid np.mean warning, aligns with test expectation
     return np.mean([lang == "UNK" or lang == f"__label__{lang_id}" for lang in langs])
