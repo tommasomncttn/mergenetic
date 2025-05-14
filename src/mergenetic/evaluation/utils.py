@@ -5,11 +5,10 @@ from enum import Enum
 import pickle
 import pandas as pd 
 from dataclasses import dataclass
-from mergenetic.evaluation.perf_estimation import estimate_theta_anchors
 from mergenetic.utils import loading_model_tokenizer_gpu_only_4bit_local, get_batched_model_predictions, Config, ConfigLmEval
 from mergenetic.evaluation import BaseEvaluator, FGMathEvaluator, MCEvaluator
-from mergenetic.evaluation.perf_estimation import estimate_theta_anchors
 from mergenetic.evaluation.lm_harness import LmHarnessEvaluator
+from mergenetic.estimator.utils import estimate_theta_anchors
 
 from lm_eval.models.vllm_causallms import VLLM
 import torch

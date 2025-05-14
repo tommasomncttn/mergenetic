@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
+from typing import List
 from dataclasses import dataclass
-from typing import List, Optional
 from mergenetic.estimator.utils import estimate_fitness
 
 # ==========================
