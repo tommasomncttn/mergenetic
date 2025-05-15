@@ -1,5 +1,7 @@
+from typing import Iterable
 from pathlib import Path
 import yaml
+
 from mergenetic.merging import Merger
 
 import logging

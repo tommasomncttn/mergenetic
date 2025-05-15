@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 import shutil
 from pathlib import Path
-import yaml
-import torch
 from mergekit.config import MergeConfiguration
 from mergekit.merge import MergeOptions, run_merge
 from mergenetic import clean_gpu
 from typing import Any
+import yaml  # Ensure yaml is imported if used for safe_load
+import torch  # Ensure torch is imported if used for cuda.is_available
 
 import logging
 
@@ -20,7 +20,6 @@ class Merger(ABC):
         path_to_store_yaml: str,
         path_to_store_merged_model: str,
         dtype: str,
-        *args: Any,
         **kwargs: Any,
     ) -> None:
         """
@@ -39,8 +38,6 @@ class Merger(ABC):
             is the path to the folder where the merged models will be stored.
         dtype : str
             is the data type of the models (e.g., float16, float32, etc.).
-        *args :
-            is the list of arguments that will be used to create the configuration file.
         **kwargs :
             is the list of keyword arguments that will be used to create the configuration file.
 
@@ -53,15 +50,25 @@ class Merger(ABC):
         super().__init__()
 
         # storing all the paths
+        self.run_id = run_id
+        # Ensure path_to_store_yaml is the full file path
         self.path_to_store_yaml = Path(path_to_store_yaml) / "config.yaml"
-        self.path_to_store_merged_model = Path(path_to_store_merged_model) / run_id
+        self.path_to_store_merged_model = Path(path_to_store_merged_model) / self.run_id
 
         # storing the data type
         self.dtype = dtype
+        # Handle other kwargs if necessary, e.g., for specific merger types
 
-    def check_and_delete_yaml(self):
+    @abstractmethod
+    def create_individual_configuration(self, *args: Any, **kwargs: Any) -> Path:
         """
-        Method to access and delete the yaml configuration file from the local storage. It is used to remove the yaml configuration file before creating a new one.
+        Creates the individual configuration file for the merger.
+        """
+        pass
+
+    def check_and_delete_yaml(self) -> None:
+        """
+        Checks if the YAML configuration file exists and deletes it.
 
         Parameters
         ----------
@@ -79,7 +86,7 @@ class Merger(ABC):
 
     def _delete_merged_model_local(self) -> None:
         """
-        Method to access and delete the merged model from the local storage. It is used to remove the merged model before creating a new one.
+        Deletes the merged model from the local storage.
 
         Parameters
         ----------
@@ -104,91 +111,44 @@ class Merger(ABC):
             logger.info(f"The folder does not exist: {self.path_to_store_merged_model}")
 
     def merge_model_from_configuration(
-        self,
-        path_to_yaml: Path | str,
-        cuda: str | None = None,
-        copy_tokenizer: bool = True,
-        lazy_unpickle: bool = True,
-        low_cpu_memory=True,
-    ) -> Path | str:
+        self, path_to_yaml: Path
+    ) -> Path:
         """
-         Abstract method to merge the models based on the configuration file created for merging models according to a given technique (DARE, TIES, etc.) mergekit implementation.
-         It requires the path to the yaml configuration file created.
-         It merges the models based on this info and class attributes.
-         store the merged model in the folder specified in the class attributes.
-
-         Parameters
-         ----------
-         path_to_yaml : Path or str
-             is the path to the yaml configuration file created.
-         cuda : str or None
-             is the device to be used for merging the models.
-         copy_tokenizer : bool
-             is the flag to copy the tokenizer (mergekit configurations).
-         lazy_unpickle : bool
-             is the flag to use lazy unpickle (mergekit configurations).
-         low_cpu_memory : bool
-             is the flag to use low cpu memory (mergekit configurations).
-
-         Returns
-         -------
-        path_to_store_merged_model : : Path or str
-             is the path to the merged model created.
-        """
-
-        # safe clean to avoid out of memory
-        clean_gpu()
-
-        # delete the previous merged model if present
-        self._delete_merged_model_local()
-
-        # open the configuration file for merging
-        with open(path_to_yaml, "r", encoding="utf-8") as fp:
-            merge_config = MergeConfiguration.model_validate(yaml.safe_load(fp))
-
-        if cuda == None:
-            cuda = torch.cuda.is_available()
-
-        # init merge options
-        logger.info(f"Merging with device: {cuda}")
-        options_merging = MergeOptions(
-            cuda=cuda,
-            copy_tokenizer=copy_tokenizer,
-            lazy_unpickle=lazy_unpickle,
-            low_cpu_memory=low_cpu_memory,
-        )
-
-        # merge the models
-        run_merge(
-            merge_config,
-            out_path=str(self.path_to_store_merged_model),
-            options=options_merging,
-        )
-
-        # safe clean to avoid out of memory
-        clean_gpu()
-
-        # return the path to the merged model
-        return self.path_to_store_merged_model
-
-    @abstractmethod
-    def create_individual_configuration(self, *args, **kwargs) -> Path | str:
-        """
-        Abstract method to create a configuration file for merging models according to a given technique (DARE, TIES, etc.) mergekit implementation.
-        It requires dynamic information specific to each merging operation (e.g., weights, densities, etc.).
-        It creates the configuration file based on this info and class attributes.
-        store the configuration file in the folder specified in the class attributes.
+        Merges the model from the configuration file.
 
         Parameters
         ----------
-        *args :
-            is the list of arguments that will be used to create the configuration file.
-        **kwargs :
-            is the list of keyword arguments that will be used to create the configuration file.
+        path_to_yaml : Path
+            is the path to the yaml configuration file created.
 
         Returns
         -------
-        Path or str
-            is the path to the yaml configuration file created.
+        path_to_store_merged_model : : Path or str
+             is the path to the merged model created.
         """
-        pass
+        logger.info("Starting model merging process...")
+        clean_gpu()
+        self._delete_merged_model_local()
+
+        with open(path_to_yaml, "r", encoding="utf-8") as f:
+            config_data = yaml.safe_load(f)
+
+        cfg = MergeConfiguration.model_validate(config_data)
+
+        options = MergeOptions(
+            cuda=torch.cuda.is_available(),
+            copy_tokenizer=True,
+            lazy_unpickle=True,
+            low_cpu_memory=True,
+        )
+
+        logger.info(f"Running merge with configuration: {cfg}")
+        logger.info(f"Output path for merged model: {self.path_to_store_merged_model}")
+        logger.info(f"Merge options: {options}")
+
+        # Ensure the output path is passed as the second positional argument
+        run_merge(cfg, str(self.path_to_store_merged_model), options=options)
+
+        logger.info(f"Model merged successfully at {self.path_to_store_merged_model}")
+        clean_gpu()
+        return self.path_to_store_merged_model

@@ -81,7 +81,7 @@ class BaseMergingProblem(ABC, Problem):
         """Convert an array representation to a model configuration."""
         logger.info(f"Converting genotype to configuration: {x}")
         path_to_config = self.merger.create_individual_configuration(x)
-        return self.merger.merge_model_from_configuration(path_to_config, cuda=self.device is not None and "cuda" in self.device)
+        return self.merger.merge_model_from_configuration(path_to_config)
 
     def load_model(self, path: str, verbose: bool = True) -> VLLM | tuple[AutoModelForCausalLM, AutoTokenizer]:
         """Loads a model and tokenizer using either Hugging Face or VLLM."""
