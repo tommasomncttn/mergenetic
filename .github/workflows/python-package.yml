@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11"]
 
     steps:
     - uses: actions/checkout@v4
@@ -26,21 +26,12 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
+      env:
+        SKIP_CUDA_BUILD: "1" # Tell setup.py to skip CUDA compilation
       run: |
         python -m pip install --upgrade pip
-        # Install linting, testing, coverage, and formatting tools
-        # You can also manage these in a requirements-dev.txt or as [dev] extras in pyproject.toml/setup.py
         python -m pip install flake8 pytest pytest-cov black isort
-        
-        # Install the package itself in editable mode.
-        # This ensures that pytest tests the package as it would be installed,
-        # and it will also install runtime dependencies defined in your
-        # pyproject.toml (under [project.dependencies]) or setup.py (install_requires).
-        python -m pip install -e .
-        
-        # If you have a requirements.txt strictly for additional runtime dependencies
-        # not covered by pyproject.toml/setup.py (less common for a distributable package),
-        # you can keep this line. Otherwise, `pip install -e .` should handle runtime deps.
+        python -m pip install -e . 
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Check formatting with Black and isort
