@@ -71,7 +71,16 @@ class PerformanceEstimator:
                     y, self.est_parameters.thetas, self.est_parameters.bench,
                     self.est_parameters.sample_ids, self.est_parameters.sample_weights
                 )
-                return estimates[self.est_parameters.mode]
+                
+                # Adjust key based on number of thetas for pirt/gpirt vs mpirt/gmpirt
+                mode_key = self.est_parameters.mode
+                if len(self.est_parameters.thetas) == 1:
+                    if mode_key == 'mpirt':
+                        mode_key = 'pirt'
+                    elif mode_key == 'gmpirt': # This case is already guarded by the ValueError above
+                        mode_key = 'gpirt' 
+                
+                return estimates[mode_key]
             case 'weighted':
                 return (self.est_parameters.sample_weights * y).sum()
             

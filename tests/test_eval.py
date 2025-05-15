@@ -1,12 +1,9 @@
 import unittest
 from unittest.mock import patch, MagicMock
 import pandas as pd
-import numpy as np
 
 from mergenetic.evaluation.math_language import extract_numbers, MCEvaluator, FGMathEvaluator
-# Assuming BaseEvaluator and LanguageDetector are in mergenetic.evaluation.evaluator
-# Adjust if the actual path is different, for patching LanguageDetector within math_language.py context
-# The actual patch target will be 'mergenetic.evaluation.math_language.LanguageDetector'
+
 
 class TestExtractNumbers(unittest.TestCase):
     def test_only_last_number_true_multiple_numbers(self):

@@ -4,9 +4,6 @@ import gradio as gr
 from pathlib import Path
 from gui.gui import create_interface
 
-# Absolute import for the function to test, assuming 'src' is in PYTHONPATH
-# and gui.gui is the path to the module.
-
 class TestCreateInterface(unittest.TestCase):
 
     @patch('gui.gui.create_config_directory')
