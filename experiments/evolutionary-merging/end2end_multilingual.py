@@ -8,13 +8,12 @@ from pymoo.algorithms.moo.nsga2 import NSGA2
 
 from mergenetic.evaluation.utils import evaluate_models, retrieve_thetas
 from mergenetic.merging import TiesDareMerger
-from mergenetic.merging.merger import *
 from mergenetic.optimization.predefined_problems import (
     ConfigMultiLingualPE,
     MultilingualMergingProblem,
 )
 from mergenetic.searcher import Searcher
-from mergenetic.utils import *
+from mergenetic.utils import Config
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 

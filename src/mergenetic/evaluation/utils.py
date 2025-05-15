@@ -281,8 +281,8 @@ def evaluate_models_lm_harness(config: ConfigLmEval):
         base_model = VLLM(
             pretrained=str(config.base_model),
             device=config.device,
-            quantization="bitsandbytes" if load_in_4bit else None,
-            gpu_memory_utilization=0.8 if load_in_4bit else 0.9,
+            quantization="bitsandbytes" if config.load_in_4bit else None,
+            gpu_memory_utilization=0.8 if config.load_in_4bit else 0.9,
         )
         evaluator = LmHarnessEvaluator(
             task_name=tasks["base"],

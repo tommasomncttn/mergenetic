@@ -4,7 +4,7 @@ from typing import Iterable
 
 import yaml
 
-from mergenetic.merging import Merger
+from mergenetic.merging.merger import Merger
 
 logger = logging.getLogger(__name__)
 

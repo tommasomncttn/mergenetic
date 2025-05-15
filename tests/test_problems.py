@@ -1,7 +1,6 @@
 import unittest
-from dataclasses import FrozenInstanceError
 from pathlib import Path
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
@@ -14,15 +13,6 @@ from mergenetic.optimization.predefined_problems import (
     LmEvalMultiObjectiveProblem,
     MultilingualMergingProblem,
 )
-
-# Assuming these are the locations of the mocked dependencies
-# Adjust paths if necessary for correct patching
-# from mergenetic.merging.merger import Merger # Will be mocked
-# from mergenetic.estimator.perf_estimation import PerformanceEstimator, PerformanceEstimationParameters # Will be mocked
-# from mergenetic.evaluation.lm_harness import LmHarnessEvaluator # Will be mocked
-# from mergenetic.evaluation.math_language import FGMathEvaluator # Will be mocked
-# from mergenetic.evaluation.multilingual_evaluator import MultilingualMCEvaluator # Will be mocked
-# from mergenetic.utils import get_batched_model_predictions # Will be mocked
 
 
 class TestConfigClasses(unittest.TestCase):

@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple, Union
 
 import pandas as pd
 
-from mergenetic.evaluation import BaseMultiObjectiveEvaluator, LanguageDetector
+from .evaluator import BaseMultiObjectiveEvaluator, LanguageDetector
 
 logger = getLogger(__name__)
 

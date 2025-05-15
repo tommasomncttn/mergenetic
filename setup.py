@@ -3,7 +3,6 @@
 import os
 
 import setuptools
-from setuptools import Extension  # Required for defining C/C++/CUDA extensions
 
 # --- CUDA Extension Setup ---
 # This list will hold your Extension objects

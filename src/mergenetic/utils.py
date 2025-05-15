@@ -192,7 +192,8 @@ def get_batched_model_predictions(
                 answers = tokenizer.batch_decode(
                     generated_ids, skip_special_tokens=True
                 )
-            except:
+            except Exception as e:
+                logger.error(f"Error during model generation: {e}")
                 answers = ["GENERATION FAILED"] * len(questions)
             # Append answers to final list
             final_answers.extend(answers)
@@ -207,7 +208,9 @@ def get_batched_model_predictions(
             model_inputs = model_inputs.to("cpu")
             try:
                 generated_ids = generated_ids.to("cpu")
-            except:
+            except (
+                AttributeError
+            ):  # Handle cases where generated_ids might not have .to()
                 pass
             torch.cuda.empty_cache()
     logger.debug(final_answers)

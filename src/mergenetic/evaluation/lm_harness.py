@@ -7,7 +7,7 @@ from lm_eval.evaluator import simple_evaluate
 from lm_eval.models.vllm_causallms import VLLM
 from lm_eval.tasks import TaskManager
 
-from mergenetic.evaluation import LanguageDetector
+from .evaluator import LanguageDetector
 
 logger = getLogger(__name__)
 
