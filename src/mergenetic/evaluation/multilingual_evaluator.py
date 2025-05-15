@@ -1,24 +1,27 @@
-from mergenetic.evaluation import BaseMultiObjectiveEvaluator, LanguageDetector
-from typing import List, Dict, Union, Tuple
-import pandas as pd
 import re
-
 from logging import getLogger
+from typing import Dict, List, Tuple, Union
+
+import pandas as pd
+
+from mergenetic.evaluation import BaseMultiObjectiveEvaluator, LanguageDetector
+
 logger = getLogger(__name__)
 
 # =========================================
 # MULTILINGUAL MULTIPLE CHOICE EVALUATOR
 # =========================================
 
+
 class MultilingualMCEvaluator(BaseMultiObjectiveEvaluator):
     """
-    Base class for multiple-choice question evaluators, providing common methods for 
+    Base class for multiple-choice question evaluators, providing common methods for
     extracting answers for multiple-choice questions, detecting languages, and computing accuracy.
     """
 
     lang_detector: LanguageDetector
 
-    def __init__(self, language_ids: list[str]=None, validate_lang=True) -> None:
+    def __init__(self, language_ids: list[str] = None, validate_lang=True) -> None:
         """
         Initializes the evaluator with a dictionary of dataframes, each corresponding to a language.
 
@@ -57,11 +60,12 @@ class MultilingualMCEvaluator(BaseMultiObjectiveEvaluator):
         str
             The extracted answer option (e.g., 'A', 'B', 'C', 'D'), or 'None' if no match is found.
         """
-        matches = re.findall(r'\(?([A-Z])\)', text)
+        matches = re.findall(r"\(?([A-Z])\)", text)
         return matches[-1] if matches else "None"
-        
-    def get_correctness(self, dataframe_dict: Dict[str, pd.DataFrame]
-                    ) -> Union[float, Tuple[List[float], str]]:
+
+    def get_correctness(
+        self, dataframe_dict: Dict[str, pd.DataFrame]
+    ) -> Union[float, Tuple[List[float], str]]:
         """
         Computes correctness across multiple language datasets.
 
@@ -79,22 +83,25 @@ class MultilingualMCEvaluator(BaseMultiObjectiveEvaluator):
         for k, v in dataframe_dict.items():
             self._validate_dataframe(v)
             self.data[k] = v.copy()
-            
+
         for lang, df in self.data.items():
             df["predictions_filtered"] = df["predictions"].apply(self._extract_answer)
             df["language"] = df["predictions"].apply(self.lang_detector._get_language)
 
-        def calc_correctness(df: pd.DataFrame, lang: str=None):
+        def calc_correctness(df: pd.DataFrame, lang: str = None):
             if self.validate_lang:
                 if self.lang_detector is None:
-                    raise ValueError("Language detector must be provided for language validation.")
+                    raise ValueError(
+                        "Language detector must be provided for language validation."
+                    )
 
-                correctness = ((df["predictions_filtered"] == df["answer"]) & 
-             ((df["language"] == f"__label__{lang}") | (df["language"] == "UNK")))
-             
+                correctness = (df["predictions_filtered"] == df["answer"]) & (
+                    (df["language"] == f"__label__{lang}") | (df["language"] == "UNK")
+                )
+
             else:
                 correctness = df["predictions_filtered"] == df["answer"]
-            
+
             df["is_correct"] = correctness
             return correctness
 
@@ -126,13 +133,15 @@ class MultilingualMathFGEvaluator(BaseMultiObjectiveEvaluator):
 
     lang_detector: LanguageDetector
 
-    def __init__(self, language_ids: list[str]=[], validate_lang: bool=True) -> None:
+    def __init__(
+        self, language_ids: list[str] = [], validate_lang: bool = True
+    ) -> None:
         """
         Parameters
         ----------
         fasttext_model_path : str
             Path to the FastText model for language detection.
-            
+
         """
         self.language_ids = language_ids
         self.validate_lang = validate_lang
@@ -155,11 +164,13 @@ class MultilingualMathFGEvaluator(BaseMultiObjectiveEvaluator):
         str
             The extracted number, or 'None' if no match is found.
         """
-        matches = re.findall(r'\d+', text)
+        matches = re.findall(r"\d+", text)
         return matches[-1] if matches else "None"
 
-    def get_correctness(self, dataframes_dict: Dict[str, pd.DataFrame],
-                    ) -> Dict[str, pd.Series]:
+    def get_correctness(
+        self,
+        dataframes_dict: Dict[str, pd.DataFrame],
+    ) -> Dict[str, pd.Series]:
         """
         Computes the correctness of the model for math problems with free generation.
 
@@ -185,18 +196,21 @@ class MultilingualMathFGEvaluator(BaseMultiObjectiveEvaluator):
             df["is_correct"] = df["predictions_filtered"] == df["answer"]
 
             if self.validate_lang:
-                df["language"] = df["predictions"].apply(self.lang_detector._get_language)
+                df["language"] = df["predictions"].apply(
+                    self.lang_detector._get_language
+                )
 
-        def calc_correctness(df: pd.DataFrame, lang: str=None):
+        def calc_correctness(df: pd.DataFrame, lang: str = None):
             if not self.validate_lang:
                 return df["is_correct"]
             else:
-                return df["is_correct"] & ((df["language"] == f"__label__{lang}") | 
-                                           (df["language"] == "UNK"))
+                return df["is_correct"] & (
+                    (df["language"] == f"__label__{lang}") | (df["language"] == "UNK")
+                )
 
         for lang, df in self.data.items():
             correctness_dict[lang] = calc_correctness(df, lang)
-        
+
         return correctness_dict
 
     def get_data(self) -> Dict[str, pd.DataFrame]:

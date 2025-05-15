@@ -1,32 +1,36 @@
 # import required modules
-from pymoo.algorithms.moo.nsga2 import NSGA2
-
-import numpy as np
 import argparse
-import yaml
+import logging
 import sys
-
-from mergenetic.merging import TiesDareMerger
-from mergenetic.optimization.predefined_problems import LmEvalMultiObjectiveProblem, ConfigLmEvalMultiObjectivePE
-from mergenetic.searcher import Searcher
-from mergenetic.utils import ConfigMultiObjective
-from mergenetic import PROJECT_ROOT
-
-from lm_eval.tasks import TaskManager
-from lm_eval.api.task import ConfigurableTask
 
 # Set up logging, instead of sending logs to stderr, use stdout
 # and set the format to include the timestamp, level, and message
 from logging import getLogger
-import logging
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s',
-                    handlers=[logging.StreamHandler(
-                        sys.stdout
-                    )], force=True)
+import numpy as np
+import yaml
+from lm_eval.api.task import ConfigurableTask
+from lm_eval.tasks import TaskManager
+from pymoo.algorithms.moo.nsga2 import NSGA2
+
+from mergenetic import PROJECT_ROOT
+from mergenetic.merging import TiesDareMerger
+from mergenetic.optimization.predefined_problems import (
+    ConfigLmEvalMultiObjectivePE,
+    LmEvalMultiObjectiveProblem,
+)
+from mergenetic.searcher import Searcher
+from mergenetic.utils import ConfigMultiObjective
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+    force=True,
+)
 
 logger = getLogger(__name__)
+
 
 def main(config: ConfigMultiObjective):
 
@@ -38,8 +42,10 @@ def main(config: ConfigMultiObjective):
         task_manager = TaskManager(include_path=path)
         ctask: ConfigurableTask = task_manager.load_task_or_group(task)[task]
 
-        anchors[task] = np.random.choice(range(len(ctask.dataset["test"])), config.n_samples, replace=False)
-        anchors_weights[task] = np.ones(len(anchors[task])) / len(anchors[task]) 
+        anchors[task] = np.random.choice(
+            range(len(ctask.dataset["test"])), config.n_samples, replace=False
+        )
+        anchors_weights[task] = np.ones(len(anchors[task])) / len(anchors[task])
 
     logger.info("STEP 3 completed: Anchors extracted; anchors: %s", anchors)
 
@@ -58,49 +64,58 @@ def main(config: ConfigMultiObjective):
         correct_metric=metric,
         additional_templates_folder=config.additional_templates_folder,
     )
-    
+
     # STEP 5. Define the merger
     base_model = config.base_model
     model_paths = config.models
-    
+
     path_to_store_yaml = f"{config.path_to_store_config}/{config.run_id}/"
     merger = TiesDareMerger(
-                            run_id=run_id,
-                            path_to_base_model=base_model,
-                            model_paths=model_paths,
-                            path_to_store_yaml=path_to_store_yaml,
-                            path_to_store_merged_model=config.path_to_store_merged_model,
-                            dtype=config.dtype
-                            )
-    
+        run_id=run_id,
+        path_to_base_model=base_model,
+        model_paths=model_paths,
+        path_to_store_yaml=path_to_store_yaml,
+        path_to_store_merged_model=config.path_to_store_merged_model,
+        dtype=config.dtype,
+    )
+
     if config.device:
         device = config.device
     else:
-        device = 'cuda'
+        device = "cuda"
 
     # STEP 6. Define the problem
 
-    n_var = len(model_paths)*2
+    n_var = len(model_paths) * 2
     problem = LmEvalMultiObjectiveProblem(
-                                    config=conf_pe,
-                                    merger=merger,
-                                    n_var=n_var,
-                                    n_obj=len(tasks),
-                                    n_eq_constr=0,
-                                    n_ieq_constr=0,
-                                    device=device,
-                                    load_in_4bit=config.load_in_4bit,
-                                    eval_batch_size=config.eval_batch_size,
-                                    )
-    
+        config=conf_pe,
+        merger=merger,
+        n_var=n_var,
+        n_obj=len(tasks),
+        n_eq_constr=0,
+        n_ieq_constr=0,
+        device=device,
+        load_in_4bit=config.load_in_4bit,
+        eval_batch_size=config.eval_batch_size,
+    )
+
     # STEP 7. Define the algorithm
-    algorithm = NSGA2(pop_size=pop_size,
-            eliminate_duplicates=True,
-            )
-    
+    algorithm = NSGA2(
+        pop_size=pop_size,
+        eliminate_duplicates=True,
+    )
+
     # STEP 8. Define the searcher and run it
     results_path = f"{config.path_to_store_config}/{config.run_id}/"
-    searcher = Searcher(problem, algorithm, results_path, n_iter, run_id=run_id, seed=config.seed, verbose=False)
+    searcher = Searcher(
+        problem,
+        algorithm,
+        results_path,
+        n_iter,
+        run_id=run_id,
+        seed=config.seed,
+        verbose=False,
+    )
 
     logger.info("Starting the search...")
 
@@ -109,18 +124,27 @@ def main(config: ConfigMultiObjective):
 
     logger.info("Search completed. Results saved to %s", results_path)
 
+
 if __name__ == "__main__":
     # parse the arguments
-    parser = argparse.ArgumentParser(description='Evolving the merging of some models.')
-    parser.add_argument('--config', type=str, help='The path to the configuration file.')
-    parser.add_argument('--device', type=str, help='The device to use for the experiment.', default=None)
-    parser.add_argument('--run_id', type=str, help='The id of the run.', default=None)
-    parser.add_argument('--no-preeval', action='store_true', help='Whether to skip the pre-evaluation step.')
+    parser = argparse.ArgumentParser(description="Evolving the merging of some models.")
+    parser.add_argument(
+        "--config", type=str, help="The path to the configuration file."
+    )
+    parser.add_argument(
+        "--device", type=str, help="The device to use for the experiment.", default=None
+    )
+    parser.add_argument("--run_id", type=str, help="The id of the run.", default=None)
+    parser.add_argument(
+        "--no-preeval",
+        action="store_true",
+        help="Whether to skip the pre-evaluation step.",
+    )
 
     args = parser.parse_args()
 
     # load the configuration
-    with open(args.config, 'r') as file:
+    with open(args.config, "r") as file:
         config = yaml.load(file, Loader=yaml.FullLoader)
 
     config = ConfigMultiObjective(**config)
@@ -137,4 +161,3 @@ if __name__ == "__main__":
     logger.info(f"Starting the experiment with the following configuration: {config}")
 
     main(config)
-       

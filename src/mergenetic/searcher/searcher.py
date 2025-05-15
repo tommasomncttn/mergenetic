@@ -1,13 +1,13 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-from pymoo.optimize import minimize
-from pymoo.core.algorithm import Algorithm
+from logging import getLogger
 from pathlib import Path
+
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+from pymoo.core.algorithm import Algorithm
+from pymoo.optimize import minimize
 
 from mergenetic.optimization import MergingProblem
-
-from logging import getLogger
 
 logger = getLogger(__name__)
 

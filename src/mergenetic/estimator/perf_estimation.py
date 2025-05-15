@@ -1,25 +1,31 @@
+from dataclasses import dataclass
+from typing import List
+
 import numpy as np
 import pandas as pd
-from typing import List
-from dataclasses import dataclass
+
 from mergenetic.estimator.utils import estimate_fitness
 
 # ==========================
 #  DATA CLASSES FOR ESTIMATION
 # ==========================
 
+
 @dataclass
 class PerformanceEstimationParameters:
     """Stores parameters for accuracy estimation."""
+
     thetas: List[np.array]
     sample_weights: np.array
     sample_ids: np.array
     bench: str
-    mode: str   # "mean", "weighted", "mpirt", "gmpirt"
+    mode: str  # "mean", "weighted", "mpirt", "gmpirt"
+
 
 # ==========================
 #  PERFORMANCE ESTIMATOR
 # ==========================
+
 
 class PerformanceEstimator:
     """
@@ -60,28 +66,38 @@ class PerformanceEstimator:
         y = correctness.astype(int).values
 
         match self.est_parameters.mode:
-            case 'mean':
+            case "mean":
                 return y.mean()
-            case 'mpirt' | 'gmpirt':
-                if self.est_parameters.mode == 'gmpirt' and len(self.est_parameters.thetas) == 1:
+            case "mpirt" | "gmpirt":
+                if (
+                    self.est_parameters.mode == "gmpirt"
+                    and len(self.est_parameters.thetas) == 1
+                ):
                     raise ValueError("GMPIRT requires multiple thetas.")
-                
+
                 # Estimate accuracy using anchoring methods
                 estimates = estimate_fitness(
-                    y, self.est_parameters.thetas, self.est_parameters.bench,
-                    self.est_parameters.sample_ids, self.est_parameters.sample_weights
+                    y,
+                    self.est_parameters.thetas,
+                    self.est_parameters.bench,
+                    self.est_parameters.sample_ids,
+                    self.est_parameters.sample_weights,
                 )
-                
+
                 # Adjust key based on number of thetas for pirt/gpirt vs mpirt/gmpirt
                 mode_key = self.est_parameters.mode
                 if len(self.est_parameters.thetas) == 1:
-                    if mode_key == 'mpirt':
-                        mode_key = 'pirt'
-                    elif mode_key == 'gmpirt': # This case is already guarded by the ValueError above
-                        mode_key = 'gpirt' 
-                
+                    if mode_key == "mpirt":
+                        mode_key = "pirt"
+                    elif (
+                        mode_key == "gmpirt"
+                    ):  # This case is already guarded by the ValueError above
+                        mode_key = "gpirt"
+
                 return estimates[mode_key]
-            case 'weighted':
+            case "weighted":
                 return (self.est_parameters.sample_weights * y).sum()
-            
-        raise ValueError(f"Invalid mode '{self.est_parameters.mode}' for accuracy estimation.")
+
+        raise ValueError(
+            f"Invalid mode '{self.est_parameters.mode}' for accuracy estimation."
+        )

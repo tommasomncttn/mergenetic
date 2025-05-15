@@ -41,3 +41,6 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 # backend-path = ["."] # Optional: default is often sufficient if setup.py is at the root
+
+[tool.isort]
+profile = "black"

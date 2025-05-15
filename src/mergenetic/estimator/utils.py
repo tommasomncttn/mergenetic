@@ -1,17 +1,20 @@
+import logging
 import os
 import pickle
-import requests
-import numpy as np
 from typing import List, Optional
+
+import numpy as np
+import requests
 from scipy.optimize import minimize
+
 from mergenetic import PROJECT_ROOT
 
-import logging
 logger = logging.getLogger(__name__)
 
 # ==========================
 #  UTILITY FUNCTIONS
 # ==========================
+
 
 def sigmoid(z: np.ndarray) -> np.ndarray:
     """
@@ -61,7 +64,7 @@ def fit_theta(
     B: np.ndarray,
     theta_init: Optional[np.ndarray] = None,
     eps: float = 1e-10,
-    optimizer: str = "BFGS"
+    optimizer: str = "BFGS",
 ) -> np.ndarray:
     """
     Fits the ability parameter theta by minimizing the negative log-likelihood.
@@ -91,7 +94,9 @@ def fit_theta(
     D = A.shape[1]
 
     def neg_log_like(x):
-        P = item_curve(x.reshape(1, D, 1), A[:, :, seen_items], B[:, :, seen_items]).squeeze()
+        P = item_curve(
+            x.reshape(1, D, 1), A[:, :, seen_items], B[:, :, seen_items]
+        ).squeeze()
         ll = np.sum(
             responses_test[seen_items] * np.log(P + eps)
             + (1 - responses_test[seen_items]) * np.log(1 - P + eps)
@@ -113,7 +118,7 @@ def fit_lambda(
     thetas: List[np.ndarray],
     lambda_init: Optional[np.ndarray] = None,
     eps: float = 1e-10,
-    optimizer: str = "BFGS"
+    optimizer: str = "BFGS",
 ) -> np.ndarray:
     """
     Finds the linear combination of multiple theta vectors that best fits
@@ -148,7 +153,9 @@ def fit_lambda(
     def neg_log_like(lambdas):
         # Combine thetas with the given lambdas
         combined_theta = sum(l * t for l, t in zip(lambdas, thetas))
-        P = item_curve(combined_theta.reshape(1, D, 1), A[:, :, seen_items], B[:, :, seen_items]).squeeze()
+        P = item_curve(
+            combined_theta.reshape(1, D, 1), A[:, :, seen_items], B[:, :, seen_items]
+        ).squeeze()
 
         log_likelihood = np.sum(
             responses_test[seen_items] * np.log(P + eps)
@@ -167,7 +174,10 @@ def fit_lambda(
 #  TINYBENCHMARKS I/O
 # ==========================
 
-def download_tinybenchmarks_if_needed(filename: str = f"{PROJECT_ROOT}/tinyBenchmarks.pkl") -> None:
+
+def download_tinybenchmarks_if_needed(
+    filename: str = f"{PROJECT_ROOT}/tinyBenchmarks.pkl",
+) -> None:
     """
     Downloads the tinyBenchmarks.pkl file from the repository if it is not present locally.
 
@@ -207,10 +217,9 @@ def get_tinybenchmarks(filename: str = f"{PROJECT_ROOT}/tinyBenchmarks.pkl") -> 
 #  TOP-LEVEL EVALUATION FUNCTIONS
 # ==========================
 
+
 def evaluate(
-    y_input: np.ndarray,
-    bench: str,
-    tinyBenchmarks: Optional[dict] = None
+    y_input: np.ndarray, bench: str, tinyBenchmarks: Optional[dict] = None
 ) -> dict:
     """
     Main function that evaluates performance on the chosen benchmark using a combination
@@ -263,11 +272,15 @@ def evaluate(
         n_sub = len(subscenarios_position[scenario])
         for sub in subscenarios_position[scenario].keys():
             n_i = len(subscenarios_position[scenario][sub])
-            balance_weights[subscenarios_position[scenario][sub]] = N_sce / (n_sub * n_i)
+            balance_weights[subscenarios_position[scenario][sub]] = N_sce / (
+                n_sub * n_i
+            )
 
     # If using the big IRT model for a single scenario
     if bench not in benchs:
-        scenario_idx = [i for i, s in enumerate(scenarios_position.keys()) if s == bench][0]
+        scenario_idx = [
+            i for i, s in enumerate(scenarios_position.keys()) if s == bench
+        ][0]
         start = number_of_examples * scenario_idx
         seen_examples = seen_examples[start : start + number_of_examples]
     else:
@@ -293,7 +306,13 @@ def evaluate(
         unseen_sce = [s for s in unseen_examples if s in scenarios_position[scenario]]
 
         data_part_IRTp = ((balance_weights * y)[seen_sce]).mean() if seen_sce else 0.0
-        irt_part = (balance_weights * item_curve(theta.reshape(1, A.shape[1], 1), A, B))[0, unseen_sce].mean() if unseen_sce else 0.0
+        irt_part = (
+            (balance_weights * item_curve(theta.reshape(1, A.shape[1], 1), A, B))[
+                0, unseen_sce
+            ].mean()
+            if unseen_sce
+            else 0.0
+        )
 
         # Weighted blending
         IRTp_lambd = number_of_examples / N_sce
@@ -305,11 +324,7 @@ def evaluate(
         # Combine with the scenario's optimal lambda
         IRTpp = optimal_lambdas[scenario] * IRT + (1 - optimal_lambdas[scenario]) * IRTp
 
-        estimates[scenario] = {
-            "irt": IRT,
-            "pirt": IRTp,
-            "gpirt": IRTpp
-        }
+        estimates[scenario] = {"irt": IRT, "pirt": IRTp, "gpirt": IRTpp}
 
     return estimates
 
@@ -318,7 +333,7 @@ def estimate_theta(
     y_input: np.ndarray,
     bench: str,
     number_of_examples: int = 100,
-    tinyBenchmarks: Optional[dict] = None
+    tinyBenchmarks: Optional[dict] = None,
 ) -> np.ndarray:
     """
     Estimates the ability parameter theta for the chosen scenario in the LB set.
@@ -377,7 +392,7 @@ def estimate_theta_linear(
     bench: str,
     thetas: List[np.ndarray],
     seen_examples: List[int],
-    tinyBenchmarks: Optional[dict] = None
+    tinyBenchmarks: Optional[dict] = None,
 ) -> np.ndarray:
     """
     Estimates a combined theta by finding the optimal linear combination of thetas
@@ -432,7 +447,7 @@ def estimate_theta_anchors(
     y_input: np.ndarray,
     bench: str,
     anchor_ids: List[int],
-    tinyBenchmarks: Optional[dict] = None
+    tinyBenchmarks: Optional[dict] = None,
 ) -> np.ndarray:
     """
     Estimate the ability parameter (theta) using only the specified anchor IDs.
@@ -475,13 +490,14 @@ def estimate_theta_anchors(
 
     return fit_theta(y, seen_examples, A, B)
 
+
 def eval_mpirt_on_anchors(
     y_input: np.ndarray,
     thetas: List[np.ndarray],
     bench: str,
     anchors_idx: List[int],
-    tinyBenchmarks: dict=None,
-    examples_weights: Optional[np.ndarray] = None
+    tinyBenchmarks: dict = None,
+    examples_weights: Optional[np.ndarray] = None,
 ) -> float:
     """
     Evaluate merged-performance IRT on anchor items, combining candidate thetas linearly.
@@ -537,14 +553,18 @@ def eval_mpirt_on_anchors(
     if len(thetas) == 1:
         final_theta = thetas[0]
     else:
-        final_theta = estimate_theta_linear(y_input, bench, thetas, seen_examples, tinyBenchmarks)
+        final_theta = estimate_theta_linear(
+            y_input, bench, thetas, seen_examples, tinyBenchmarks
+        )
 
     # Identify seen/unseen for scenario
     unseen_examples = [i for i in range(N) if i not in seen_examples]
     unseen_sce = [s for s in unseen_examples if s in scenarios_position[bench]]
     # Weighted item-curve
     if len(unseen_sce) > 0:
-        mpirt_part = (item_curve(final_theta.reshape(1, A.shape[1], 1), A, B))[0, unseen_sce].mean()
+        mpirt_part = (item_curve(final_theta.reshape(1, A.shape[1], 1), A, B))[
+            0, unseen_sce
+        ].mean()
     else:
         mpirt_part = 0.0
 
@@ -564,8 +584,8 @@ def estimate_fitness(
     bench: str,
     anchors_idx: List[int],
     example_weights: np.ndarray,
-    tinybenchmarks: dict=None,
-    delta: float = 0.5
+    tinybenchmarks: dict = None,
+    delta: float = 0.5,
 ) -> dict:
     """
     Evaluate merge performance on anchors, returning mpirt, rc, and a combination gmpirt.
@@ -592,7 +612,14 @@ def estimate_fitness(
     dict
         Contains "mpirt", "weighted_avg", and "gmpirt" measures.
     """
-    mpirt_val = eval_mpirt_on_anchors(y_input, thetas, bench, anchors_idx, tinybenchmarks, examples_weights=example_weights)
+    mpirt_val = eval_mpirt_on_anchors(
+        y_input,
+        thetas,
+        bench,
+        anchors_idx,
+        tinybenchmarks,
+        examples_weights=example_weights,
+    )
     weighted_avg = (example_weights * y_input).sum()
     gmpirt = delta * weighted_avg + (1 - delta) * mpirt_val
 

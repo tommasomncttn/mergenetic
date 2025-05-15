@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import setuptools
 import os
-from setuptools import Extension # Required for defining C/C++/CUDA extensions
+
+import setuptools
+from setuptools import Extension  # Required for defining C/C++/CUDA extensions
 
 # --- CUDA Extension Setup ---
 # This list will hold your Extension objects
@@ -22,7 +23,9 @@ else:
     if cuda_home:
         print(f"---------------------------------------------------------------------")
         print(f"CUDA_HOME found at {cuda_home}. Attempting to build CUDA extensions.")
-        print(f"If you want to skip this, set the SKIP_CUDA_BUILD=1 environment variable.")
+        print(
+            f"If you want to skip this, set the SKIP_CUDA_BUILD=1 environment variable."
+        )
         print(f"---------------------------------------------------------------------")
 
         # ==========================================================================
@@ -63,19 +66,33 @@ else:
         # If you have multiple CUDA extensions, define and append each one.
         # ==========================================================================
 
-        if not ext_modules: # If no extensions were defined (e.g., placeholder not filled)
-            print("---------------------------------------------------------------------")
-            print("WARNING: CUDA detected, but no CUDA extensions were defined in setup.py.")
+        if (
+            not ext_modules
+        ):  # If no extensions were defined (e.g., placeholder not filled)
+            print(
+                "---------------------------------------------------------------------"
+            )
+            print(
+                "WARNING: CUDA detected, but no CUDA extensions were defined in setup.py."
+            )
             print("The package will be built without CUDA-specific compiled modules.")
-            print("Please fill in the 'TODO' section in setup.py if CUDA modules are expected.")
-            print("---------------------------------------------------------------------")
+            print(
+                "Please fill in the 'TODO' section in setup.py if CUDA modules are expected."
+            )
+            print(
+                "---------------------------------------------------------------------"
+            )
 
     else:
         print("---------------------------------------------------------------------")
         print("CUDA_HOME environment variable not found.")
         print("Skipping CUDA extension compilation.")
-        print("If you have CUDA installed and want to build extensions, ensure CUDA_HOME is set.")
-        print("Alternatively, set SKIP_CUDA_BUILD=1 to suppress this message and build without CUDA.")
+        print(
+            "If you have CUDA installed and want to build extensions, ensure CUDA_HOME is set."
+        )
+        print(
+            "Alternatively, set SKIP_CUDA_BUILD=1 to suppress this message and build without CUDA."
+        )
         print("---------------------------------------------------------------------")
 
 if __name__ == "__main__":

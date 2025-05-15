@@ -1,14 +1,15 @@
-from abc import ABC, abstractmethod
+import logging
 import shutil
+from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Any
+
+import torch  # Ensure torch is imported if used for cuda.is_available
+import yaml  # Ensure yaml is imported if used for safe_load
 from mergekit.config import MergeConfiguration
 from mergekit.merge import MergeOptions, run_merge
-from mergenetic import clean_gpu
-from typing import Any
-import yaml  # Ensure yaml is imported if used for safe_load
-import torch  # Ensure torch is imported if used for cuda.is_available
 
-import logging
+from mergenetic import clean_gpu
 
 logger = logging.getLogger(__name__)
 
@@ -110,9 +111,7 @@ class Merger(ABC):
 
             logger.info(f"The folder does not exist: {self.path_to_store_merged_model}")
 
-    def merge_model_from_configuration(
-        self, path_to_yaml: Path
-    ) -> Path:
+    def merge_model_from_configuration(self, path_to_yaml: Path) -> Path:
         """
         Merges the model from the configuration file.
 

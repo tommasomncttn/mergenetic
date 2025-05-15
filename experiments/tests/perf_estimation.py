@@ -1,29 +1,38 @@
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
+
 from mergenetic.evaluation import (
-    MultipleChoiceMathLanguageLoss, 
-    AnchoredMultipleChoiceMathLanguageLoss, 
-    AccuracyEstimationParameters
+    AccuracyEstimationParameters,
+    AnchoredMultipleChoiceMathLanguageLoss,
+    MultipleChoiceMathLanguageLoss,
 )
 
 
 @pytest.fixture
 def sample_dataframe():
     """Returns a simple DataFrame for testing."""
-    return pd.DataFrame({
-        "predictions": ["3.14", "42", "7", "not_a_number", ""],
-        "answer": ["3.14", "42", "8", "not_a_number", "42"]
-    })
+    return pd.DataFrame(
+        {
+            "predictions": ["3.14", "42", "7", "not_a_number", ""],
+            "answer": ["3.14", "42", "8", "not_a_number", "42"],
+        }
+    )
 
 
 @pytest.fixture
 def language_dataframe():
     """Returns a DataFrame with varied language predictions."""
-    return pd.DataFrame({
-        "predictions": ["Ceci est une phrase", "Este es un texto", "Questo è italiano"],
-        "answer": ["test", "test", "test"]
-    })
+    return pd.DataFrame(
+        {
+            "predictions": [
+                "Ceci est une phrase",
+                "Este es un texto",
+                "Questo è italiano",
+            ],
+            "answer": ["test", "test", "test"],
+        }
+    )
 
 
 @pytest.fixture
@@ -35,7 +44,7 @@ def accuracy_params():
         sample_ids=np.array([0, 1, 2]),
         bench="gsm8k",
         mode="mpirt",
-        tb_data=None
+        tb_data=None,
     )
 
 
@@ -48,21 +57,30 @@ def test_initialization(sample_dataframe):
 def test_missing_columns():
     """Ensure an error is raised if required columns are missing."""
     df = pd.DataFrame({"incorrect_col": ["3.14", "42"]})
-    with pytest.raises(ValueError, match="DataFrame must contain 'predictions' and 'answer' columns."):
+    with pytest.raises(
+        ValueError, match="DataFrame must contain 'predictions' and 'answer' columns."
+    ):
         MultipleChoiceMathLanguageLoss(df)
 
 
 def test_extract_numbers():
     """Test various number extraction cases."""
     assert MultipleChoiceMathLanguageLoss._extract_numbers("The answer is 42.") == "42"
-    assert MultipleChoiceMathLanguageLoss._extract_numbers("Pi is approximately 3.1415") == "3.1415"
+    assert (
+        MultipleChoiceMathLanguageLoss._extract_numbers("Pi is approximately 3.1415")
+        == "3.1415"
+    )
     assert MultipleChoiceMathLanguageLoss._extract_numbers("No numbers here!") is None
 
 
 def test_language_detection(language_dataframe):
     """Ensure that language detection is working correctly."""
-    evaluator = MultipleChoiceMathLanguageLoss(language_dataframe, fasttext_language_id="__label__it")
-    detected_languages = language_dataframe["predictions"].apply(evaluator._get_language)
+    evaluator = MultipleChoiceMathLanguageLoss(
+        language_dataframe, fasttext_language_id="__label__it"
+    )
+    detected_languages = language_dataframe["predictions"].apply(
+        evaluator._get_language
+    )
 
     assert isinstance(detected_languages, pd.Series)
     assert len(detected_languages) == 3
@@ -79,7 +97,7 @@ def test_get_metrics_with_dataframe(sample_dataframe):
     """Test if get_metrics() returns a DataFrame when requested."""
     evaluator = MultipleChoiceMathLanguageLoss(sample_dataframe)
     acc, df = evaluator.get_metrics(return_dataframe=True)
-    
+
     assert isinstance(acc, float)
     assert isinstance(df, pd.DataFrame)
     assert "is_answer_correct" in df.columns
@@ -87,7 +105,9 @@ def test_get_metrics_with_dataframe(sample_dataframe):
 
 def test_anchored_evaluation(sample_dataframe, accuracy_params):
     """Ensure the anchored evaluator computes accuracy correctly."""
-    evaluator = AnchoredMultipleChoiceMathLanguageLoss(sample_dataframe, accuracy_params)
+    evaluator = AnchoredMultipleChoiceMathLanguageLoss(
+        sample_dataframe, accuracy_params
+    )
     accuracy = evaluator.get_metrics()
 
     assert 0.0 <= accuracy <= 1.0  # Ensure it returns a valid probability
