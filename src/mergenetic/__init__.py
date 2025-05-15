@@ -1,9 +1,8 @@
+import logging
 import os
 from pathlib import Path
 
 import git
-
-import logging
 
 logger = logging.getLogger(__name__)
 

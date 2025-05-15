@@ -1,14 +1,16 @@
-from lm_eval.tasks import TaskManager
-from lm_eval.api.task import ConfigurableTask
-from lm_eval.evaluator import simple_evaluate
-from lm_eval.models.vllm_causallms import VLLM
+from logging import getLogger
 
 import numpy as np
 import pandas as pd
-from mergenetic.evaluation import LanguageDetector
+from lm_eval.api.task import ConfigurableTask
+from lm_eval.evaluator import simple_evaluate
+from lm_eval.models.vllm_causallms import VLLM
+from lm_eval.tasks import TaskManager
 
-from logging import getLogger
+from .evaluator import LanguageDetector
+
 logger = getLogger(__name__)
+
 
 class LmHarnessEvaluator:
     """
@@ -21,20 +23,22 @@ class LmHarnessEvaluator:
     """
 
     task: ConfigurableTask
-    task_manager: TaskManager=None
+    task_manager: TaskManager = None
     sample_ids: list[int] | None
     lang_detector: LanguageDetector | None
     lang_id: str | None
 
-    def __init__(self, task_name: str, 
-                 correctness_metric: str = 'exact_match',
-                 sample_ids: list[int] | None = None,
-                 lang_id: str | None = None,
-                 is_test: bool = False,
-                 additional_templates_folder: str | None = None,
-                 batch_size: int = 32,
-                 ) -> None:
-        
+    def __init__(
+        self,
+        task_name: str,
+        correctness_metric: str = "exact_match",
+        sample_ids: list[int] | None = None,
+        lang_id: str | None = None,
+        is_test: bool = False,
+        additional_templates_folder: str | None = None,
+        batch_size: int = 32,
+    ) -> None:
+
         self.task_manager = TaskManager(include_path=additional_templates_folder)
         self.task: ConfigurableTask = self.get_task(task_name)
 
@@ -44,7 +48,9 @@ class LmHarnessEvaluator:
             if is_test:
                 # take all excluding sample_ids
                 ids = np.arange(len(self.task.dataset["test"]))
-                self.task.dataset["test"] = self.task.dataset["test"].select(np.setdiff1d(ids, sample_ids))
+                self.task.dataset["test"] = self.task.dataset["test"].select(
+                    np.setdiff1d(ids, sample_ids)
+                )
 
             else:
                 self.task.dataset["test"] = self.task.dataset["test"].select(sample_ids)
@@ -59,7 +65,9 @@ class LmHarnessEvaluator:
             lang_id = None
 
         try:
-            self.lang_detector = LanguageDetector([lang_id]) if lang_id is not None else None
+            self.lang_detector = (
+                LanguageDetector([lang_id]) if lang_id is not None else None
+            )
         except Exception as e:
             logger.warning(f"Language detection is disabled. Error: {e}")
             self.lang_detector = None
@@ -104,46 +112,89 @@ class LmHarnessEvaluator:
         def get_responses(results):
             answers = []
             logger.info(f"Num of Answers: {len(results['samples'][self.task_nm])}")
-            for sample in results['samples'][self.task_nm]:
-                if isinstance(sample['resps'], list) and len(sample['resps']) > 0:
-                    if isinstance(sample['resps'][0], list) and len(sample['resps'][0]) > 0:
+            for sample in results["samples"][self.task_nm]:
+                if isinstance(sample["resps"], list) and len(sample["resps"]) > 0:
+                    if (
+                        isinstance(sample["resps"][0], list)
+                        and len(sample["resps"][0]) > 0
+                    ):
                         # flatten to a single list
-                        list_resp = [item for sublist in sample['resps'] for item in sublist]
-                        answers.append({"id": sample['doc_id'],
-                                        "correctness": sample[self.correctness_metric],
-                                        "model_answers": list_resp})
+                        list_resp = [
+                            item for sublist in sample["resps"] for item in sublist
+                        ]
+                        answers.append(
+                            {
+                                "id": sample["doc_id"],
+                                "correctness": sample[self.correctness_metric],
+                                "model_answers": list_resp,
+                            }
+                        )
                     else:
-                        answers.append({"id": sample['doc_id'],
-                                        "correctness": sample[self.correctness_metric],
-                                        "model_answers": sample['resps']}[0])
+                        answers.append(
+                            {
+                                "id": sample["doc_id"],
+                                "correctness": sample[self.correctness_metric],
+                                "model_answers": sample["resps"][0],
+                            }
+                        )
                 else:
-                    answers.append({"id": sample['doc_id'],
-                                    "correctness": sample[self.correctness_metric],
-                                    "model_answers": sample['resps']})
+                    answers.append(
+                        {
+                            "id": sample["doc_id"],
+                            "correctness": sample[self.correctness_metric],
+                            "model_answers": sample["resps"],
+                        }
+                    )
             return answers
-        
+
         self.data = pd.DataFrame(get_responses(results))
+
+        # let's filter the answers by sample_ids
+        self.data = (
+            self.data[self.data["id"].isin(self.sample_ids)]
+            if self.sample_ids is not None
+            else self.data
+        )
 
         # if the number of answers is more than len(sample_ids), then we need to filter the answers
         # by randomly picking one with the same id
-        if self.sample_ids is not None and len(self.data) > len(self.sample_ids):
-            self.data = self.data.groupby('id').apply(lambda x: x.sample(1)).reset_index(drop=True)
 
-        #logger.info(f"Answers: {self.data}")
+        if self.sample_ids is not None and len(self.data) > len(self.sample_ids):
+            self.data = self.data.groupby("id").sample(n=1).reset_index(drop=True)
+
+        logger.info(f"Samples from model answers: {self.data['model_answers'].head(5)}")
 
         if self.lang_detector is None:
-            logger.info(f"Language detection is disabled. Fitness: {self.data['correctness'].mean()}")
+            logger.info(
+                f"Language detection is disabled. Fitness: {self.data['correctness'].mean()}"
+            )
             return self.data["correctness"]
         else:
-            print(self.data["model_answers"][0])
             if isinstance(self.data["model_answers"][0], str):
-                self.data["language"] = self.data["model_answers"].apply(lambda x: self.lang_detector._get_language(x[0] if not isinstance(x, str) else x))
-                self.data["is_language_correct"] = self.data["language"] == ("__label__" + self.lang_id)
+                self.data["language"] = self.data["model_answers"].apply(
+                    lambda x: self.lang_detector._get_language(
+                        x[0] if not isinstance(x, str) else x
+                    )
+                )
+                self.data["is_language_correct"] = self.data["language"] == (
+                    "__label__" + self.lang_id
+                )
             else:
-                self.data["language"] = self.data["model_answers"].apply(lambda x: [self.lang_detector._get_language( y[0] if not isinstance(y, str) else y ) for y in x])
-                self.data["is_language_correct"] = self.data["language"].apply(lambda x: avg_lang_correctness(self.lang_id, x))
+                self.data["language"] = self.data["model_answers"].apply(
+                    lambda x: [
+                        self.lang_detector._get_language(
+                            y[0] if not isinstance(y, str) else y
+                        )
+                        for y in x
+                    ]
+                )
+                self.data["is_language_correct"] = self.data["language"].apply(
+                    lambda x: avg_lang_correctness(self.lang_id, x)
+                )
 
-            logger.info(f"Language detection is enabled. Fitness: {(self.data['is_language_correct'] * self.data['correctness']).mean()}")
+            logger.info(
+                f"Language detection is enabled. Fitness: {(self.data['is_language_correct'] * self.data['correctness']).mean()}"
+            )
             return self.data["is_language_correct"] * self.data["correctness"]
 
     def get_data(self) -> pd.DataFrame:
@@ -157,7 +208,8 @@ class LmHarnessEvaluator:
         """
         return self.data
 
-def avg_lang_correctness(lang_id:str, langs: list[str]) -> float:
+
+def avg_lang_correctness(lang_id: str, langs: list[str]) -> float:
     """
     Returns the average correctness of the language detection.
 
@@ -169,6 +221,10 @@ def avg_lang_correctness(lang_id:str, langs: list[str]) -> float:
     Returns
     -------
     float
-        Average correctness of the language detection.
+        Average correctness of the language detection. Returns np.nan if langs is empty.
     """
+    if not langs:  # Check if the list is empty
+        return (
+            np.nan
+        )  # Return NaN directly to avoid np.mean warning, aligns with test expectation
     return np.mean([lang == "UNK" or lang == f"__label__{lang_id}" for lang in langs])

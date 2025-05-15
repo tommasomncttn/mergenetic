@@ -1,0 +1,66 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python package CI
+
+on:
+  push:
+    branches: [ "main", "unit-tests" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_and_test:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5 # Updated to v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install torch CPU-only
+      run: pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+
+    - name: Install dependencies
+      env:
+        SKIP_CUDA_BUILD: "1" # Tell setup.py to skip CUDA compilation
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install flake8 pytest pytest-cov black isort
+        python -m pip install -e . 
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Check formatting with Black and isort
+      run: |
+        black --check .
+        isort --check-only .
+
+    - name: Lint with Flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        # This command will not fail the build due to --exit-zero
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Test with Pytest and generate coverage report
+      run: |
+        # Run pytest, generate coverage report in XML (for Codecov) and text summary
+        pytest --cov=. --cov-report=xml --cov-report=term-missing
+
+    # Optional: Upload coverage to Codecov or a similar service
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }} # Optional: store your Codecov token in GitHub secrets
+        # files: ./coverage.xml # Optional: specify coverage file if not default
+        # fail_ci_if_error: true # Optional: fail CI if Codecov upload fails
+      # This step will only run if the CODECOV_TOKEN secret is available.
+      # You can make it conditional: if: github.repository_owner == 'your_org_or_username'

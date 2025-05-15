@@ -1,20 +1,24 @@
-from mergenetic.merging import Merger
-from typing import Iterable
+import logging
 from pathlib import Path
+from typing import Iterable
+
 import yaml
 
-import logging
+from mergenetic.merging.merger import Merger
+
 logger = logging.getLogger(__name__)
 
+
 class TiesMerger(Merger):
-    def __init__(self, 
-                 run_id: str, 
-                 path_to_base_model: str, 
-                 model_paths: list, 
-                 path_to_store_yaml: str, 
-                 path_to_store_merged_model: str, 
-                 dtype: str
-                 ) -> None:
+    def __init__(
+        self,
+        run_id: str,
+        path_to_base_model: str,
+        model_paths: list,
+        path_to_store_yaml: str,
+        path_to_store_merged_model: str,
+        dtype: str,
+    ) -> None:
         """
         Concrete class for merging models. It is used to create a configuration file for merging models according to TIES.
         It requires all the information for merging through mergekit library according to the given merging technique.
@@ -26,7 +30,7 @@ class TiesMerger(Merger):
         ----------
         run_id : str
             is the id of the run that will be used to store all the yaml configuration files for merging.
-        path_to_base_model : str 
+        path_to_base_model : str
             is the path to the downloaded base model that will be used for merging.
         model_paths : list
             variable number of paths for the models that will be merged.
@@ -47,11 +51,11 @@ class TiesMerger(Merger):
         self.path_to_base_model = Path(path_to_base_model)
         self.model_paths = [Path(path) for path in model_paths]
 
-    def create_individual_configuration(self, 
-                                        weights_and_densities: Iterable
-                                        ) -> Path | str:
+    def create_individual_configuration(
+        self, weights_and_densities: Iterable
+    ) -> Path | str:
         """
-        Method to create a configuration file for merging models according to DARE_TIES mergekit implementation. 
+        Method to create a configuration file for merging models according to DARE_TIES mergekit implementation.
         It requires dynamic information specific to each merging operation (e.g., weights, densities, etc.).
         It creates the configuration file based on this info and class attributes.
         Store the configuration file in the folder specified in the class attributes.
@@ -66,30 +70,34 @@ class TiesMerger(Merger):
         Path or str
             is the path to the yaml configuration file created.
         """
-       
-        # weights_and_densities =[(float(weights_and_densities[0]), float(weights_and_densities[3])),(float(weights_and_densities[1]), float(weights_and_densities[4])),( float(weights_and_densities[2]) , float(weights_and_densities[5]))]
-        weights_and_densities = [(float(weights_and_densities[i]), float(weights_and_densities[i + len(weights_and_densities)//2])) for i in range(len(weights_and_densities)//2)]
 
+        # weights_and_densities =[(float(weights_and_densities[0]), float(weights_and_densities[3])),(float(weights_and_densities[1]), float(weights_and_densities[4])),( float(weights_and_densities[2]) , float(weights_and_densities[5]))]
+        weights_and_densities = [
+            (
+                float(weights_and_densities[i]),
+                float(weights_and_densities[i + len(weights_and_densities) // 2]),
+            )
+            for i in range(len(weights_and_densities) // 2)
+        ]
 
         # Create a dictionary for the configuration file
-        model_info = [{'model': str(self.path_to_base_model)}]
-        for model_path, (weight, density) in zip(self.model_paths, weights_and_densities):
-            model_info.append({
-                'model': str(model_path),
-                'parameters': {
-                    'weight': weight,
-                    'density': density
+        model_info = [{"model": str(self.path_to_base_model)}]
+        for model_path, (weight, density) in zip(
+            self.model_paths, weights_and_densities
+        ):
+            model_info.append(
+                {
+                    "model": str(model_path),
+                    "parameters": {"weight": weight, "density": density},
                 }
-            })
+            )
 
         config = {
-            'models': model_info,
-            'merge_method': 'ties',
-            'base_model': str(self.path_to_base_model),
-            'parameters': {
-                'int8_mask': True
-            },
-            'dtype': self.dtype
+            "models": model_info,
+            "merge_method": "ties",
+            "base_model": str(self.path_to_base_model),
+            "parameters": {"int8_mask": True},
+            "dtype": self.dtype,
         }
 
         # Create Directory for YAML file
@@ -97,7 +105,7 @@ class TiesMerger(Merger):
         config_directory.mkdir(parents=True, exist_ok=True)
 
         # Write the dictionary to a YAML file
-        with open(self.path_to_store_yaml, 'w') as file:
+        with open(self.path_to_store_yaml, "w") as file:
             yaml.dump(config, file, default_flow_style=False)
             logger.info(f"Configuration file created at {self.path_to_store_yaml}")
 
