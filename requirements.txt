@@ -18,3 +18,4 @@ lm-eval[vllm]
 git+https://github.com/teelinsan/mergekit.git
 gradio
 psutil
+pytest
