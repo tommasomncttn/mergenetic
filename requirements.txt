@@ -8,10 +8,11 @@ PyYAML==6.0.1
 bitsandbytes==0.45.4
 einops==0.7.0
 pandas==2.2.2
-pymoo
 fasttext-numpy2
-plotly
+prompt_toolkit
 scikit-learn
+pymoo
+plotly
 git-python
 lm-eval[vllm]
 git+https://github.com/teelinsan/mergekit.git
