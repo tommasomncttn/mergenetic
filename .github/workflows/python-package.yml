@@ -25,6 +25,9 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Install torch CPU-only
+      run: pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+
     - name: Install dependencies
       env:
         SKIP_CUDA_BUILD: "1" # Tell setup.py to skip CUDA compilation
