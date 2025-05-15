@@ -6,7 +6,6 @@ from pathlib import Path
 import tempfile
 import shutil
 
-# Assuming Searcher and MergingProblem are accessible
 from mergenetic.searcher import Searcher
 from mergenetic.optimization import MergingProblem # For type hinting and mocking
 

@@ -20,7 +20,7 @@ logging.basicConfig(
 logger = logging.getLogger("mergenetic.cli")
 
 # Define PROJECT_ROOT locally to avoid circular import
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 logger.info(f"Project root: {PROJECT_ROOT}")
 
 def input_with_default(prompt_text, default=None):
