@@ -1,5 +1,5 @@
 <p align="center">
-    <img width="800" alt="image" src="logo.png">
+    <img width="100%" alt="mergenetic - evolve LLMs" src="banner.webp">
 </p>
 
 
