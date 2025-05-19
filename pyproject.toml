@@ -3,7 +3,7 @@ name = "mergenetic"
 version = "0.1.0"
 description = "Evolutionary model merging for LLMs"
 readme = "README.md"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
 authors = [{ name = "Tommaso Mencattini", email = "tommaso.mencattini@epfl.ch" }, { name = "Adrian R. Minut", email = "robertadrian.minut@gmail.com" }]
 keywords = ["llm", "model merging", "evolutionary optimization", "mergekit"]
 requires-python = ">=3.10,<3.12"
@@ -14,13 +14,13 @@ dependencies = [
   "einops==0.7.0",
   "fasttext-numpy2",
   "git-python",
-  "gradio",
-  "lm-eval[vllm]",
-  "mergekit @ git+https://github.com/teelinsan/mergekit.git",
+  "gradio==5.29.1",
+  "lm-eval[vllm]==0.4.8",
+  "mergekit==0.0.6",
   "pandas==2.2.2",
   "plotly",
-  "psutil",
-  "pymoo",
+  "psutil==7.0.0",
+  "pymoo==0.6.1.3",
   "pytest",
   "pyyaml==6.0.1",
   "scikit-learn",
@@ -29,14 +29,19 @@ dependencies = [
   "wrapt==1.16.0",
   "xxhash==3.4.1",
   "yarl==1.9.4",
-  "prompt_toolkit",
+  "prompt_toolkit==3.0.51",
 ]
+
+[project.urls]
+Homepage = "https://github.com/tommasomncttn/mergenetic"
+Repository = "https://github.com/tommasomncttn/mergenetic.git"
+Issues = "https://github.com/tommasomncttn/mergenetic/issues"
 
 [build-system]
 requires = [
     "setuptools>=61.0", 
     "wheel",
-    "numpy>=1.20.0",  # For PyTorch and potentially other build steps
+    "numpy>=2.0.2",  # For PyTorch and potentially other build steps
     "torch>=2.0.0",   # If setup.py imports torch for CUDAExtension or other reasons
     "pybind11>=2.6.0" # If your extensions use Pybind11 and setup.py needs it
 ]
@@ -45,3 +50,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.isort]
 profile = "black"
+
+[tool.setuptools]
+license-files = []
