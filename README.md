@@ -158,8 +158,17 @@ Bug reports, feature requests and pull requests are very welcome! Please read [`
 
 ## 🧠 Citation
 
-> *Citation info coming soon – stay tuned!*
-
+```bibtex
+@misc{minut2025mergeneticsimpleevolutionarymodel,
+      title={Mergenetic: a Simple Evolutionary Model Merging Library}, 
+      author={Adrian Robert Minut and Tommaso Mencattini and Andrea Santilli and Donato Crisostomi and Emanuele Rodolà},
+      year={2025},
+      eprint={2505.11427},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2505.11427}, 
+}
+```
 
 
 ## 📄 License
