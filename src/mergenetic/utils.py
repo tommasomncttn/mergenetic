@@ -51,6 +51,7 @@ class ConfigLmEval(Config):
     tasks: Dict[str, Dict[str, Dict[str, str]]] = None
     additional_templates_folder: Optional[str] = None
     load_in_4bit: bool = True
+    eager_mode: bool = False
 
 
 @dataclass
@@ -81,6 +82,7 @@ class ConfigMultiObjective:
     base_model: Optional[Any] = None
     force_evaluation: bool = False
     load_in_4bit: bool = True
+    eager_mode: bool = False
 
 
 ############################################################################################################

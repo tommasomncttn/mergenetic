@@ -29,7 +29,7 @@ from mergenetic.utils import ConfigLmEval
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s",
     handlers=[logging.StreamHandler(sys.stdout)],
     force=True,
 )
@@ -124,6 +124,7 @@ def main(config: ConfigLmEval):
         n_eq_constr=0,
         n_ieq_constr=0,
         discrete=True,
+        eager_mode=config.eager_mode,
         load_in_4bit=config.load_in_4bit,
         eval_batch_size=config.eval_batch_size,
         additional_templates_folder=config.additional_templates_folder,

@@ -1,7 +1,7 @@
 # Required parameters
 run_id: "multiobjective"                               # str
-n_iter:   1   # int
-pop_size: 1  # int
+n_iter:   5   # int
+pop_size: 7  # int
 
 metric: "acc"
 models: 
@@ -31,3 +31,4 @@ device: "cuda:2"  # str | None
 
 eval_batch_size: 64                             # int, default=8
 load_in_4bit: True
+eager_mode: True

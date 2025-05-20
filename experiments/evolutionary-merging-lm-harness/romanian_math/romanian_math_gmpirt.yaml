@@ -27,3 +27,4 @@ task_type: "FG_MATH"
 eval_batch_size: 64                             # int, default=8
 additional_templates_folder: "lm_tasks"
 load_in_4bit: False
+eager_mode: True

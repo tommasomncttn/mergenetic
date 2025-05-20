@@ -141,9 +141,8 @@ class Merger(ABC):
             low_cpu_memory=True,
         )
 
-        logger.info(f"Running merge with configuration: {cfg}")
-        logger.info(f"Output path for merged model: {self.path_to_store_merged_model}")
-        logger.info(f"Merge options: {options}")
+        logger.debug(f"Running merge with configuration: {cfg}")
+        logger.debug(f"Merge options: {options}")
 
         # Ensure the output path is passed as the second positional argument
         run_merge(cfg, str(self.path_to_store_merged_model), options=options)

@@ -1,10 +1,13 @@
 from dataclasses import dataclass
+from logging import getLogger
 from typing import List
 
 import numpy as np
 import pandas as pd
 
 from mergenetic.estimator.utils import estimate_fitness
+
+logger = getLogger(__name__)
 
 # ==========================
 #  DATA CLASSES FOR ESTIMATION
@@ -64,6 +67,10 @@ class PerformanceEstimator:
         """
         # Convert boolean results to integers (1 = correct, 0 = incorrect)
         y = correctness.astype(int).values
+
+        if len(y) == 0:
+            logger.warning("No samples to estimate accuracy. Returning 0.")
+            return 0.0
 
         match self.est_parameters.mode:
             case "mean":

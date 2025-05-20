@@ -33,6 +33,7 @@ class BaseMergingProblem(ABC, Problem):
         discrete: bool = False,
         device: str = "cuda",
         load_in_4bit: bool = True,
+        eager_mode: bool = False,
         use_lm_eval: bool = False,  # Flag for using lm-eval-harness (VLLM)
         verbose_evaluation: bool = True,
         test_mode: bool = False,
@@ -52,9 +53,13 @@ class BaseMergingProblem(ABC, Problem):
         self.custom_prompt_template = custom_prompt_template or False
         self.n_eq_constr = n_eq_constr
         self.n_ieq_constr = n_ieq_constr
+        self.eager_mode = eager_mode
 
         if self.load_in_4bit:
-            logger.info("Loading model in 4bit...")
+            logger.info("Loading models in 4bit quantization...")
+
+        if self.eager_mode:
+            logger.info("Using eager mode for VLLM.")
 
         # Adjust bounds for discrete search
         if self.discrete:
@@ -108,9 +113,11 @@ class BaseMergingProblem(ABC, Problem):
             return VLLM(
                 pretrained=str(path),
                 device=device,
+                enforce_eager=self.eager_mode,
                 dtype=torch.bfloat16,
                 quantization="bitsandbytes" if self.load_in_4bit else None,
                 gpu_memory_utilization=0.8 if self.load_in_4bit else 0.9,
+                load_format="bitsandbytes" if self.load_in_4bit else "auto",
             )
         else:
             if self.load_in_4bit:
@@ -157,7 +164,7 @@ class BaseMergingProblem(ABC, Problem):
         path_to_model = self._from_array_to_genotype(x)
         model = self.load_model(path_to_model)
 
-        logger.info(f"Evaluating model at step {self.step}: {x}")
+        logger.info(f"Step {self.step}, evaluating genotype: {x}")
         # Multi-objective fitness handling
         if self.use_lm_eval:
             f, description = self.metrics_4_genotype(model)
@@ -183,13 +190,23 @@ class BaseMergingProblem(ABC, Problem):
         else:
             # Update each objective's DataFrame separately
             for obj_name, fitness_value in zip(self.objective_list, f):
-                self.results_df[obj_name] = pd.concat(
-                    [
-                        self.results_df[obj_name],
-                        pd.DataFrame([{**log_entry, obj_name: fitness_value}]),
-                    ],
-                    ignore_index=True,
+                # Define the columns for the specific objective's DataFrame
+                current_obj_df_columns = self.results_df[obj_name].columns
+
+                # Prepare the new row data, ensuring it only contains the relevant columns.
+                # log_entry already contains obj_name mapped to its fitness_value (which is f_i).
+                new_row_dict = {col: log_entry[col] for col in current_obj_df_columns}
+                new_df_row = pd.DataFrame(
+                    [new_row_dict], columns=current_obj_df_columns
                 )
+
+                if self.results_df[obj_name].empty:
+                    self.results_df[obj_name] = new_df_row
+                else:
+                    self.results_df[obj_name] = pd.concat(
+                        [self.results_df[obj_name], new_df_row],
+                        ignore_index=True,
+                    )
 
         del model
         torch.cuda.empty_cache()

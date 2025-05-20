@@ -54,8 +54,8 @@ class LmHarnessEvaluator:
 
             else:
                 self.task.dataset["test"] = self.task.dataset["test"].select(sample_ids)
-                logger.info("Sample ids provided. Using the specified sample ids.")
-                logger.info(f"Selected samples: {self.task.dataset['test']}")
+                logger.debug("Sample ids provided. Using the specified sample ids.")
+                logger.debug(f"Selected samples: {self.task.dataset['test']}")
         else:
             logger.info("No sample ids provided. Using the entire dataset.")
 
@@ -108,10 +108,15 @@ class LmHarnessEvaluator:
             Evaluation results.
         """
         results = simple_evaluate(model, tasks=[self.task], batch_size=self.batch_size)
+        # map results ids to sample ids
+        if self.sample_ids is not None:
+            for sample in results["samples"][self.task_nm]:
+                sample["doc_id"] = self.sample_ids[sample["doc_id"]]
 
         def get_responses(results):
             answers = []
             logger.info(f"Num of Answers: {len(results['samples'][self.task_nm])}")
+
             for sample in results["samples"][self.task_nm]:
                 if isinstance(sample["resps"], list) and len(sample["resps"]) > 0:
                     if (
@@ -149,6 +154,10 @@ class LmHarnessEvaluator:
 
         self.data = pd.DataFrame(get_responses(results))
 
+        logger.debug(
+            f"Extracted {len(self.data)} samples from the model answers. Ids: {self.data['id']}"
+        )
+
         # let's filter the answers by sample_ids
         self.data = (
             self.data[self.data["id"].isin(self.sample_ids)]
@@ -160,9 +169,19 @@ class LmHarnessEvaluator:
         # by randomly picking one with the same id
 
         if self.sample_ids is not None and len(self.data) > len(self.sample_ids):
+            logger.info(
+                f"Number of samples in the dataset ({len(self.data)}) is greater than the number of sample ids provided ({len(self.sample_ids)})."
+            )
             self.data = self.data.groupby("id").sample(n=1).reset_index(drop=True)
 
-        logger.info(f"Samples from model answers: {self.data['model_answers'].head(5)}")
+        if (len(self.data) != len(self.sample_ids)) and self.sample_ids is not None:
+            logger.warning(
+                f"Number of samples in the dataset ({len(self.data)}) does not match the number of sample ids provided ({len(self.sample_ids)})."
+            )
+
+        logger.debug(
+            f"Samples from model answers: {self.data['model_answers'].head(5)}"
+        )
 
         if self.lang_detector is None:
             logger.info(
