@@ -4,7 +4,7 @@ import logging
 import sys
 
 # Set up logging, instead of sending logs to stderr, use stdout
-# and set the format to include the timestamp, level, and message
+# and set the format to include the timestamp, level, file:line, and message
 from logging import getLogger
 
 import numpy as np
@@ -24,7 +24,7 @@ from mergenetic.utils import ConfigMultiObjective
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s",
     handlers=[logging.StreamHandler(sys.stdout)],
     force=True,
 )
@@ -97,6 +97,7 @@ def main(config: ConfigMultiObjective):
         device=device,
         load_in_4bit=config.load_in_4bit,
         eval_batch_size=config.eval_batch_size,
+        eager_mode=config.eager_mode,
     )
 
     # STEP 7. Define the algorithm
@@ -158,6 +159,11 @@ if __name__ == "__main__":
         config.run_id = args.run_id
         logger.info(f"Overwriting run_id with arg: {args.run_id}")
 
-    logger.info(f"Starting the experiment with the following configuration: {config}")
+    if args.device or args.run_id:
+        logger.info(
+            f"Overwrote configuration. Starting the experiment with the following configuration: {config}"
+        )
+    else:
+        logger.info("No changes in the configuration.")
 
     main(config)

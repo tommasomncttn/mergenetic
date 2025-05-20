@@ -49,3 +49,6 @@ tasks:
     nl: "arc_nl"
     de: "arc_de"
     en: "arc_en"
+
+    load_in_4bit: True
+    eager_mode: True

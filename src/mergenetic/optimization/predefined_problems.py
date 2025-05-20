@@ -516,8 +516,7 @@ class LmEvalMultiObjectiveProblem(MultiObjectiveMergingProblem):
                 bench=None,
             )
             perf_estimator = PerformanceEstimator(est_params)
-
-            logger.info(f"Correctness for {k}: {correctness}")
+            logger.info(f"Correctness for {k}: {correctness.to_list()}")
             acc_dict[k] = perf_estimator.estimate_accuracy(correctness)
 
         f = [-1 * acc for acc in acc_dict.values()]
