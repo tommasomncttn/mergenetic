@@ -35,7 +35,23 @@
 
 ## 🛠️ Installation
 
+You can install the latest release directly from PyPI:
+
 ```bash
+pip install mergenetic
+```
+
+Or update an existing installation:
+
+```bash
+pip install --upgrade mergenetic
+```
+
+Another option is to create a conda environment and install it from source:
+
+```bash
+git clone https://github.com/tommasomncttn/mergenetic.git
+cd mergenetic
 conda create --name mergenetic python=3.11 -y
 conda activate mergenetic
 pip install -r requirements.txt
@@ -109,7 +125,7 @@ python -m mergenetic.cli \
   --merge-type single \
   --eval-method lm-eval \
   --models mistral-7b math-7b \
-  --task ita_gsm8k
+  --task gsm8k-it
 ```
 
 An interactive wizard will guide you through the remaining options. See [`cli/README.md`](cli/README.md) for the full reference.
