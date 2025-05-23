@@ -1,9 +1,13 @@
+![ACL Demo 2025](http://img.shields.io/badge/ACL%20Demo-2025-B31B1B.svg)
+
+
 <p align="center">
     <img width="100%" alt="mergenetic - evolve LLMs" src="https://github.com/tommasomncttn/mergenetic/raw/main/banner.webp">
 </p>
 
 
 # 🧪 Mergenetic: Evolutionary Model Merging for LLMs
+
 `mergenetic` is a flexible library for merging large language models (LLMs) via **evolutionary optimization**. It frames model merging as a black-box optimization problem and uses techniques like genetic algorithms and smart performance estimators to search for optimal weight combinations — enabling high-performance merges, even on consumer hardware.
 
 
