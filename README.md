@@ -1,10 +1,12 @@
-![ACL Demo 2025](http://img.shields.io/badge/ACL%20Demo-2025-B31B1B.svg)
-
-
 <p align="center">
     <img width="100%" alt="mergenetic - evolve LLMs" src="https://github.com/tommasomncttn/mergenetic/raw/main/banner.webp">
 </p>
 
+<p align="center">
+  <a href="https://arxiv.org/pdf/2505.11427">
+    <img src="https://img.shields.io/badge/ACL%20Demo-2025-B31B1B.svg" alt="ACL Demo 2025"/>
+  </a>
+</p>
 
 # 🧪 Mergenetic: Evolutionary Model Merging for LLMs
 
