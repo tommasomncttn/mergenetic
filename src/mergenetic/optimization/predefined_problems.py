@@ -209,11 +209,14 @@ class CrossLingualMathProblem(MergingProblem):
                 model, tokenizer = self.load_model(path_to_model)
 
         if self.use_lm_eval:
-            return self.metrics_4_genotype(model)
+            results = self.metrics_4_genotype(model)
         else:
-            return self.metrics_4_genotype(model, tokenizer)
+            results = self.metrics_4_genotype(model, tokenizer)
 
-
+        self.test_mode = False
+        
+        return results
+    
 # =====================
 #  MULTILINGUAL PROBLEM
 # =====================
