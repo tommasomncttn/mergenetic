@@ -6,7 +6,7 @@ import gradio as gr
 import yaml
 
 # Import utility functions from gui_utils.py
-from gui.gui_utils import (
+from mergenetic_gui.gui_utils import (
     PROJECT_ROOT,
     create_config_directory,
     get_component_value,

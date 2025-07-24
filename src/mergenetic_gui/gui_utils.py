@@ -17,7 +17,7 @@ logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 # Define PROJECT_ROOT
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 logger.info(f"Project root: {PROJECT_ROOT}")
 
 # Queue for log messages
