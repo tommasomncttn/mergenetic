@@ -1,0 +1,24 @@
+run_id: math-ro
+base_model: meta-math/MetaMath-Mistral-7B
+device: cuda
+dtype: float16
+task_type: lm_eval
+pop_size: 1
+n_iter: 1
+n_samples: 10
+eval_batch_size: 32
+seed: 42
+path_to_store_config: /mnt/ssd1/adrian/projects/mergenetic/configs
+path_to_store_merged_model: /mnt/ssd1/adrian/projects/mergenetic/models
+mode: mean
+metric: exact_match
+langs:
+- task0
+models:
+  task0: OpenLLM-Ro/RoMistral-7b-Instruct
+tasks:
+  search:
+    task0: gsm8k-ro
+  test:
+    task0: gsm8k-ro
+additional_templates_folder: lm_tasks

@@ -187,3 +187,5 @@ experiments/models/**
 
 *.egg-info/
 **/lid.176.bin
+
+models

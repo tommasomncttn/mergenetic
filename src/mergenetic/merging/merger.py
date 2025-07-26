@@ -135,7 +135,7 @@ class Merger(ABC):
         cfg = MergeConfiguration.model_validate(config_data)
 
         options = MergeOptions(
-            cuda=torch.cuda.is_available(),
+            #cuda=False, # TODO: change to torch.cuda.is_available()
             copy_tokenizer=True,
             lazy_unpickle=True,
             low_cpu_memory=True,

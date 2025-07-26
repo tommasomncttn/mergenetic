@@ -1,28 +1,27 @@
-additional_templates_folder: lm_tasks
+run_id: multilang-arc
 base_model: mistralai/Mistral-7B-v0.1
-device: cuda
+device: cuda:2
 dtype: float16
+task_type: lm_eval
+pop_size: 10
+n_iter: 10
+n_samples: 10
 eval_batch_size: 16
+seed: 42
+path_to_store_config: configs
+path_to_store_merged_model: models
+mode: mean
+metric: acc
 langs:
 - task0
 - task1
 - task2
 - task3
-metric: acc
-mode: mean
 models:
   task0: LeoLM/leo-mistral-hessianai-7b
   task1: mistralai/Mistral-7B-v0.1
   task2: DeepMount00/Mistral-Ita-7b
   task3: BramVanroy/GEITje-7B-ultra
-n_iter: 10
-n_samples: 10
-path_to_store_config: configs
-path_to_store_merged_model: models
-pop_size: 10
-run_id: multilang-arc2
-seed: 42
-task_type: lm_eval
 tasks:
   search:
     task0: arc_de
@@ -34,3 +33,4 @@ tasks:
     task1: arc_en
     task2: arc_it
     task3: arc_nl
+additional_templates_folder: lm_tasks
